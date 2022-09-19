@@ -11,7 +11,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title>Archives |  风大，进来说</title>
+      <title>Docker运行Nginx容器 |  风大，进来说</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/favicon.ico" />
@@ -52,205 +52,225 @@
       
     <main class="content on">
       <section class="outer">
+  <article
+  id="post-Docker运行Nginx容器"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Docker运行Nginx容器
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/" class="article-date">
+  <time datetime="2020-10-27T10:15:39.000Z" itemprop="datePublished">2020-10-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a>
+  </div>
   
-  <ul class="ads">
-    
-        <li>
-            <a target="_blank" rel="noopener" href="https://curl.qcloud.com/kvO7hb43">
-                <img src="https://pic.imgdb.cn/item/62174b452ab3f51d912a5ccc.jpg" width="300" alt="云服务器限时秒杀">
-            </a>
-        </li>
-    
-        <li>
-            <a target="_blank" rel="noopener" href="https://www.vultr.com/?ref=8630075">
-                <img src="https://pic.imgdb.cn/item/62174b452ab3f51d912a5cd7.png" width="300" alt="vultr优惠vps">
-            </a>
-        </li>
-    
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> Word count:</span>
+            <span class="post-count">822</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> Reading time≈</span>
+            <span class="post-count">3 min</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><strong>整体步骤：</strong></p>
+<ol>
+<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
+<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
+<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
+</ol>
+<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
+<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a target="_blank" rel="noopener" href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
+<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
+<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
 </ul>
-  
-  
-  <article class="articles">
-    
-    
-    <h1 class="page-type-title">Archives</h1>
-    
-    
-  
-  
-  
-  
-  
-  
-  <div class="archives-wrap">
-    <div class="archive-year-wrap">
-      <a href="/archives/2021" class="archive-year">2021</a>
-    </div>
-    <div class="archives">
-      
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" class="archive-article-date">
-  <time datetime="2021-03-22T08:40:25.000Z" itemprop="datePublished">03/22</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/"
-    >观察者模式</a> 
-</h2>
+<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
+<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
+<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
+</li>
+<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
+<blockquote>
+<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
+<blockquote>
+<p>解释：</p>
+<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
+<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
+<p><code>-d</code>，表示后台运行该容器。</p>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
+<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
+<blockquote>
+<ol>
+<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
+<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
+<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
+</li>
+<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
+</li>
+<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
+</li>
+</ul>
+<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
+<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
+<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
+</ul>
+<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
  
-
-    </header>
-    
-    
-  </div>
-</article>
+      <!-- reward -->
       
-  
-  
-  
-  </div>
-  </div>
-  
-  
-  <div class="archives-wrap">
-    <div class="archive-year-wrap">
-      <a href="/archives/2020" class="archive-year">2020</a>
-    </div>
-    <div class="archives">
-      
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/" class="archive-article-date">
-  <time datetime="2020-10-27T10:15:39.000Z" itemprop="datePublished">10/27</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/"
-    >Docker运行Nginx容器</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/" class="archive-article-date">
-  <time datetime="2020-10-09T13:28:17.000Z" itemprop="datePublished">10/09</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/"
-    >JavaWeb——Servlet</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/" class="archive-article-date">
-  <time datetime="2020-09-30T13:12:52.000Z" itemprop="datePublished">09/30</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/"
-    >java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/" class="archive-article-date">
-  <time datetime="2020-09-29T09:30:08.000Z" itemprop="datePublished">09/29</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/"
-    >startup.bat启动Tomcat闪退问题原因及解决</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/" class="archive-article-date">
-  <time datetime="2020-09-15T03:30:33.000Z" itemprop="datePublished">09/15</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/"
-    >Nginx配置信息</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
-  
-  
-      <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/" class="archive-article-date">
-  <time datetime="2020-08-27T08:40:25.000Z" itemprop="datePublished">08/27</time>
-</a>
-       
-<h2 itemprop="name">
-  <a class="archive-article-title" href="/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/"
-    >正向代理与反向代理</a> 
-</h2>
- 
-
-    </header>
-    
-    
-  </div>
-</article>
-      
+      <div id="reword-out">
+        <div id="reward-btn">
+          Donate
+        </div>
+      </div>
       
     </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>Copyright： </strong>
+          
+          Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source.
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://spencedou.github.io/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nginx/" rel="tag">nginx</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" rel="tag">服务器</a></li></ul>
+
+    </footer>
   </div>
-  
-  
+
+   
+  <nav class="article-nav">
+    
+      <a href="/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            观察者模式
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">JavaWeb——Servlet</div>
+      </a>
+    
+  </nav>
 
   
+   
+  
+   
+    <script src="https://cdn.staticfile.org/twikoo/1.4.18/twikoo.all.min.js"></script>
+    <div id="twikoo" class="twikoo"></div>
+    <script>
+        twikoo.init({
+            envId: ""
+        })
+    </script>
+ 
+</article>
+
 </section>
       <footer class="footer">
   <div class="outer">
@@ -399,6 +419,22 @@
 <script src="/js/lazyload.min.js"></script>
 
 <!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
 
 <script src="https://cdn.staticfile.org/jquery-modal/0.9.2/jquery.modal.min.js"></script>
 <link
