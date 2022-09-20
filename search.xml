@@ -1,6 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Docker运行Nginx容器</title>
+    <url>/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/</url>
+    <content><![CDATA[<p><strong>整体步骤：</strong></p>
+<ol>
+<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
+<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
+<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
+</ol>
+<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
+<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
+<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
+<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
+</ul>
+<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
+<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
+<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
+</li>
+<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
+<blockquote>
+<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
+<blockquote>
+<p>解释：</p>
+<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
+<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
+<p><code>-d</code>，表示后台运行该容器。</p>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
+<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
+<blockquote>
+<ol>
+<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
+<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
+<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
+</li>
+<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
+</li>
+<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
+</li>
+</ul>
+<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
+<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
+<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
+</ul>
+<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>nginx</tag>
+        <tag>服务器</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>JavaWeb——Servlet</title>
     <url>/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/</url>
     <content><![CDATA[<h2 id="Servlet简介"><a href="#Servlet简介" class="headerlink" title="Servlet简介"></a>Servlet简介</h2><p><span style="color:red">Servlet通常指的就是实现Servlet接口的java类，通过对http请求进行处理并响应结果，用以开发动态web。</span></p>
@@ -84,68 +146,6 @@
       </categories>
       <tags>
         <tag>JavaWeb</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Docker运行Nginx容器</title>
-    <url>/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/</url>
-    <content><![CDATA[<p><strong>整体步骤：</strong></p>
-<ol>
-<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
-<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
-<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
-</ol>
-<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
-<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
-<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
-<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
-</ul>
-<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
-<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
-<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
-</li>
-<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
-<blockquote>
-<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
-<blockquote>
-<p>解释：</p>
-<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
-<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
-<p><code>-d</code>，表示后台运行该容器。</p>
-</blockquote>
-</blockquote>
-</li>
-</ul>
-<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
-<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
-<blockquote>
-<ol>
-<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
-<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
-<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
-</ol>
-</blockquote>
-</li>
-<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
-</li>
-<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
-</li>
-<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
-</li>
-</ul>
-<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
-<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
-<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
-</ul>
-<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>nginx</tag>
-        <tag>服务器</tag>
       </tags>
   </entry>
   <entry>
@@ -257,39 +257,6 @@
       </tags>
   </entry>
   <entry>
-    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
-    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
-    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
-<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
-<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
-<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
-<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
-<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
-<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
-<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
-<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
-<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
-<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
-<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
-<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
-<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
-<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>web开发</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-        <tag>tomcat</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Nginx配置信息</title>
     <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
     <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
@@ -354,6 +321,39 @@
       <tags>
         <tag>服务器</tag>
         <tag>Nginx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
+    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
+    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
+<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
+<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
+<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
+<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
+<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
+<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
+<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
+<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
+<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
+<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
+<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
+<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>web开发</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
+        <tag>tomcat</tag>
       </tags>
   </entry>
   <entry>
@@ -429,6 +429,23 @@
       </categories>
       <tags>
         <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>正向代理与反向代理</title>
+    <url>/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/</url>
+    <content><![CDATA[<h2 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h2><ol>
+<li>当你想要访问一些网站时，发现时而能进时而又不能，就比如…<a href="https://pixivic.com/?VNK=90f826db">pixivic</a>、GitHub，或是想要访问YouTube等。此时你会怎么做？</li>
+<li>我们的服务部署在服务器上，本可以通过主机IP、服务端口号直接访问，那为什么不直接让前端通过主机或者主机域名加端口访问呢？</li>
+</ol>
+<h2 id="正向代理"><a href="#正向代理" class="headerlink" title="正向代理"></a>正向代理</h2><p><strong>原理</strong>：代理服务器是<code>独立搭建</code>的，用户将自己的请求发送给代理服务器，代理服务器将客户请求发送给目标服务器，目标服务器将请求结果响应给代理服务器，代理服务器将响应信息返回给用户。</p>
+<p>![img](<a href="http://qn.mfei.fun/img/~A8%7D$[[_ZGEFJVI">http://qn.mfei.fun/img/~A8}$[[_ZGEFJVI</a>(Q</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
       </tags>
   </entry>
   <entry>
@@ -549,6 +566,25 @@
       </tags>
   </entry>
   <entry>
+    <title>观察者模式</title>
+    <url>/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h2 id="了解观察者模式"><a href="#了解观察者模式" class="headerlink" title="了解观察者模式"></a>了解观察者模式</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>观察者模式（Observer Pattern）。定义对象间的一种<code>一对多的依赖关系</code>，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。</p>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><p>张三欠了很多人钱，债主每天来要钱对谁都不好。于是就可以让张三有钱时主动通知债主，没钱时就让债主等着（债主就是观察者，观察张三有没有钱）。于是观察者模式又叫<code>发布者模式</code>。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 观察者模式</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ObserverPattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 张三为借钱者</span></span><br><span class="line">        <span class="type">Debit</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DebitImpl</span>();</span><br><span class="line">        <span class="comment">// 向老板借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Boss</span>());</span><br><span class="line">        <span class="comment">// 向朋友借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Friend</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自行改变判断state为true时（有钱后）通知还钱</span></span><br><span class="line">        zhangSan.notifyCreadits();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 借贷者接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 向贷款方借钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span>;</span><br><span class="line">    <span class="comment">// 通知债主自己要还钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款者</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DebitImpl</span> <span class="keyword">implements</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 创建一个数据结构存放这些债主</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Credit&gt; allCredits = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 当为true时表示有钱，可以通知还钱</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">state</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span> &#123;</span><br><span class="line">        <span class="comment">// 每借一个人的钱就把这个人存到集合中去</span></span><br><span class="line">        allCredits.add(credit);</span><br><span class="line">        System.out.println(<span class="string">&quot;张三借钱！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 还钱时直接遍历集合通知还钱</span></span><br><span class="line">        allCredits.forEach(credit -&gt; credit.takeMoney());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款方（债主）接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line">    <span class="comment">// 债主要钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Boss</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boss得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Friend</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Friend得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/%7DBZ6CUEI4CJWAZASBC54W1K.png" alt="img"></p>
+<h2 id="观察者模式应用"><a href="#观察者模式应用" class="headerlink" title="观察者模式应用"></a>观察者模式应用</h2><h3 id="情景使用——天气预报"><a href="#情景使用——天气预报" class="headerlink" title="情景使用——天气预报"></a>情景使用——天气预报</h3><p>描述：气象站想要把自己测量的温度、湿度、天气等信息以公告形式发布出去（如：自己的官网或QQ、微信等第三方），那么他就需要设计开放型的的API（提供温度、湿度、气压等接口），便于其他第三方也能接入气象站获取数据。测量数据更新时要能实时的通知给第三方。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919152121253.png" alt="image-20220919152121253"></p>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>设计模式</tag>
+        <tag>观察者模式</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>状态模式</title>
     <url>/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>状态模式（State Pattern）：允许一个对象在其内部状态改变时改变它的行为，对象看起来似乎修改了它的类。其别名为状态对象（Objects for Status）。简而言之——<code>对象可根据不同情况作出不同行为</code>。</p>
@@ -572,42 +608,6 @@
       <tags>
         <tag>设计模式</tag>
         <tag>状态模式</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>正向代理与反向代理</title>
-    <url>/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/</url>
-    <content><![CDATA[<h2 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h2><ol>
-<li>当你想要访问一些网站时，发现时而能进时而又不能，就比如…<a href="https://pixivic.com/?VNK=90f826db">pixivic</a>、GitHub，或是想要访问YouTube等。此时你会怎么做？</li>
-<li>我们的服务部署在服务器上，本可以通过主机IP、服务端口号直接访问，那为什么不直接让前端通过主机或者主机域名加端口访问呢？</li>
-</ol>
-<h2 id="正向代理"><a href="#正向代理" class="headerlink" title="正向代理"></a>正向代理</h2><p><strong>原理</strong>：代理服务器是<code>独立搭建</code>的，用户将自己的请求发送给代理服务器，代理服务器将客户请求发送给目标服务器，目标服务器将请求结果响应给代理服务器，代理服务器将响应信息返回给用户。</p>
-<p>![img](<a href="http://qn.mfei.fun/img/~A8%7D$[[_ZGEFJVI">http://qn.mfei.fun/img/~A8}$[[_ZGEFJVI</a>(Q</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>观察者模式</title>
-    <url>/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[<h2 id="了解观察者模式"><a href="#了解观察者模式" class="headerlink" title="了解观察者模式"></a>了解观察者模式</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>观察者模式（Observer Pattern）。定义对象间的一种<code>一对多的依赖关系</code>，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。</p>
-<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><p>张三欠了很多人钱，债主每天来要钱对谁都不好。于是就可以让张三有钱时主动通知债主，没钱时就让债主等着（债主就是观察者，观察张三有没有钱）。于是观察者模式又叫<code>发布者模式</code>。</p>
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 观察者模式</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ObserverPattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 张三为借钱者</span></span><br><span class="line">        <span class="type">Debit</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DebitImpl</span>();</span><br><span class="line">        <span class="comment">// 向老板借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Boss</span>());</span><br><span class="line">        <span class="comment">// 向朋友借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Friend</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自行改变判断state为true时（有钱后）通知还钱</span></span><br><span class="line">        zhangSan.notifyCreadits();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 借贷者接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 向贷款方借钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span>;</span><br><span class="line">    <span class="comment">// 通知债主自己要还钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款者</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DebitImpl</span> <span class="keyword">implements</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 创建一个数据结构存放这些债主</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Credit&gt; allCredits = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 当为true时表示有钱，可以通知还钱</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">state</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span> &#123;</span><br><span class="line">        <span class="comment">// 每借一个人的钱就把这个人存到集合中去</span></span><br><span class="line">        allCredits.add(credit);</span><br><span class="line">        System.out.println(<span class="string">&quot;张三借钱！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 还钱时直接遍历集合通知还钱</span></span><br><span class="line">        allCredits.forEach(credit -&gt; credit.takeMoney());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款方（债主）接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line">    <span class="comment">// 债主要钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Boss</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boss得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Friend</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Friend得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/%7DBZ6CUEI4CJWAZASBC54W1K.png" alt="img"></p>
-<h2 id="观察者模式应用"><a href="#观察者模式应用" class="headerlink" title="观察者模式应用"></a>观察者模式应用</h2><h3 id="情景使用——天气预报"><a href="#情景使用——天气预报" class="headerlink" title="情景使用——天气预报"></a>情景使用——天气预报</h3><p>描述：气象站想要把自己测量的温度、湿度、天气等信息以公告形式发布出去（如：自己的官网或QQ、微信等第三方），那么他就需要设计开放型的的API（提供温度、湿度、气压等接口），便于其他第三方也能接入气象站获取数据。测量数据更新时要能实时的通知给第三方。</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919152121253.png" alt="image-20220919152121253"></p>
-]]></content>
-      <categories>
-        <category>设计模式</category>
-      </categories>
-      <tags>
-        <tag>设计模式</tag>
-        <tag>观察者模式</tag>
       </tags>
   </entry>
   <entry>
