@@ -149,6 +149,39 @@
       </tags>
   </entry>
   <entry>
+    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
+    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
+    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
+<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
+<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
+<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
+<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
+<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
+<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
+<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
+<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
+<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
+<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
+<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
+<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>web开发</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
+        <tag>tomcat</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Nginx配置信息</title>
     <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
     <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
@@ -213,39 +246,6 @@
       <tags>
         <tag>服务器</tag>
         <tag>Nginx</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
-    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
-    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
-<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
-<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
-<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
-<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
-<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
-<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
-<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
-<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
-<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
-<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
-<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
-<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
-<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
-<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>web开发</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-        <tag>tomcat</tag>
       </tags>
   </entry>
   <entry>
