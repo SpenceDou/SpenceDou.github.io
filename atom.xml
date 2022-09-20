@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>风大，进来说</title>
+  
+  
+  <link href="https://spencedou.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://spencedou.github.io/"/>
+  <updated>2022-09-19T07:22:23.881Z</updated>
+  <id>https://spencedou.github.io/</id>
+  
+  <author>
+    <name>SpenceDou</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>观察者模式</title>
+    <link href="https://spencedou.github.io/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/"/>
+    <id>https://spencedou.github.io/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/</id>
+    <published>2021-03-22T08:40:25.000Z</published>
+    <updated>2022-09-19T07:22:23.881Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;了解观察者模式&quot;&gt;&lt;a href=&quot;#了解观察者模式&quot; class=&quot;headerlink&quot; title=&quot;了解观察者模式&quot;&gt;&lt;/a&gt;了解观察者模式&lt;/h2&gt;&lt;h3 id=&quot;定义&quot;&gt;&lt;a href=&quot;#定义&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="设计模式" scheme="https://spencedou.github.io/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
+    
+    
+    <category term="设计模式" scheme="https://spencedou.github.io/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
+    
+    <category term="观察者模式" scheme="https://spencedou.github.io/tags/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker运行Nginx容器</title>
+    <link href="https://spencedou.github.io/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/"/>
+    <id>https://spencedou.github.io/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/</id>
+    <published>2020-10-27T10:15:39.000Z</published>
+    <updated>2022-09-19T07:19:08.440Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;&lt;strong&gt;整体步骤：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。&lt;/li&gt;
+&lt;li&gt;进入容器将conf.d移动到向宿主机挂载的空文件夹中。&lt;/li&gt;
+&lt;li&gt;进入向宿主机挂载的空文件夹中，并将con</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://spencedou.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="docker" scheme="https://spencedou.github.io/tags/docker/"/>
+    
+    <category term="nginx" scheme="https://spencedou.github.io/tags/nginx/"/>
+    
+    <category term="服务器" scheme="https://spencedou.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>JavaWeb——Servlet</title>
+    <link href="https://spencedou.github.io/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/"/>
+    <id>https://spencedou.github.io/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/</id>
+    <published>2020-10-09T13:28:17.000Z</published>
+    <updated>2022-09-19T07:11:59.502Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Servlet简介&quot;&gt;&lt;a href=&quot;#Servlet简介&quot; class=&quot;headerlink&quot; title=&quot;Servlet简介&quot;&gt;&lt;/a&gt;Servlet简介&lt;/h2&gt;&lt;p&gt;&lt;span</summary>
+        
+      
+    
+    
+    
+    <category term="web开发" scheme="https://spencedou.github.io/categories/web%E5%BC%80%E5%8F%91/"/>
+    
+    
+    <category term="JavaWeb" scheme="https://spencedou.github.io/tags/JavaWeb/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
+    <link href="https://spencedou.github.io/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/"/>
+    <id>https://spencedou.github.io/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</id>
+    <published>2020-09-30T13:12:52.000Z</published>
+    <updated>2022-09-19T06:57:08.543Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;&lt;code&gt;java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&quot;问题描述：&quot;&gt;&lt;a href=&quot;#问题描述：&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="web开发" scheme="https://spencedou.github.io/categories/web%E5%BC%80%E5%8F%91/"/>
+    
+    
+    <category term="服务器" scheme="https://spencedou.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"/>
+    
+    <category term="tomcat" scheme="https://spencedou.github.io/tags/tomcat/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>startup.bat启动Tomcat闪退问题原因及解决</title>
+    <link href="https://spencedou.github.io/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/"/>
+    <id>https://spencedou.github.io/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/</id>
+    <published>2020-09-29T09:30:08.000Z</published>
+    <updated>2022-09-19T06:51:29.745Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;出现问题&quot;&gt;&lt;a href=&quot;#出现问题&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="web开发" scheme="https://spencedou.github.io/categories/web%E5%BC%80%E5%8F%91/"/>
+    
+    
+    <category term="服务器" scheme="https://spencedou.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"/>
+    
+    <category term="tomcat" scheme="https://spencedou.github.io/tags/tomcat/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Nginx配置信息</title>
+    <link href="https://spencedou.github.io/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/"/>
+    <id>https://spencedou.github.io/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</id>
+    <published>2020-09-15T03:30:33.000Z</published>
+    <updated>2022-09-19T06:46:13.851Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;在nginx的文件目录&lt;code&gt;etc/nginx&lt;/code&gt;下，有一个&lt;code&gt;nginx.conf&lt;/code&gt;文件和一个&lt;code&gt;conf.d&lt;/code&gt;文件夹。&lt;/p&gt;
+&lt;h2 id=&quot;nginx-conf文件&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://spencedou.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="服务器" scheme="https://spencedou.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"/>
+    
+    <category term="Nginx" scheme="https://spencedou.github.io/tags/Nginx/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>正向代理与反向代理</title>
+    <link href="https://spencedou.github.io/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/"/>
+    <id>https://spencedou.github.io/2020/08/27/%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/</id>
+    <published>2020-08-27T08:40:25.000Z</published>
+    <updated>2022-09-19T06:44:01.700Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;问题引出&quot;&gt;&lt;a href=&quot;#问题引出&quot; class=&quot;headerlink&quot; title=&quot;问题引出&quot;&gt;&lt;/a&gt;问题引出&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;当你想要访问一些网站时，发现时而能进时而又不能，就比如…&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://spencedou.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="服务器" scheme="https://spencedou.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/"/>
+    
+  </entry>
+  
+</feed>
