@@ -145,6 +145,156 @@
     
     
     <article
+  id="post-java.lang.NoClassDefFoundError javaxservlethttpHttpServlet"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/"
+    >java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/" class="article-date">
+  <time datetime="2020-09-30T13:12:52.000Z" itemprop="datePublished">2020-09-30</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/web%E5%BC%80%E5%8F%91/">web开发</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
+<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
+<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
+<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
+<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
+<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
+<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
+<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
+<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
+<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
+<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
+<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
+<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure> 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/" rel="tag">tomcat</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" rel="tag">服务器</a></li></ul>
+
+    </footer>
+  </div>
+
+    
+ 
+   
+  
+</article>
+
+    
+    <article
+  id="post-startup.bat启动Tomcat闪退问题原因及解决"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/"
+    >startup.bat启动Tomcat闪退问题原因及解决</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/" class="article-date">
+  <time datetime="2020-09-29T09:30:08.000Z" itemprop="datePublished">2020-09-29</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/web%E5%BC%80%E5%8F%91/">web开发</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h3 id="出现问题"><a href="#出现问题" class="headerlink" title="出现问题"></a>出现问题</h3><p>安装了Tomcat之后，开始用着还好好的。<code>莫名其妙</code>的就很突然出现了一些玄学问题，某一次开始我双击了<code>startup.bat</code>启动Tomcat时我的黑窗口就很不给面子的运行着运行着就<code>闪退</code>了，隐约间能看到个异常，可刚看清楚一个<code>caused by...</code>黑窗口就已经关闭了。经历了重启电脑等常规解决问题的思路后依旧无法解决。</p>
+<h3 id="分析问题"><a href="#分析问题" class="headerlink" title="分析问题"></a>分析问题</h3><p>既然问题出现在这个启动后闪退，那就去看一眼启动时都做了什么？用记事本打开<code>startup.bat</code>，会发现一行脚本是这样写的：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set &quot;EXECUTABLE=%CATALINA_HOME%\bin\catalina.bat&quot;</span><br></pre></td></tr></table></figure>
+
+<p>看得出它访问了本目录下的<code>catalina.bat</code>脚本，那就记事本打开<code>catalina.bat</code>，此时又发现里面出现了这些内容：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">rem Get standard Java environment variables</span><br><span class="line">if exist &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; goto okSetclasspath</span><br><span class="line">echo Cannot find &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot;</span><br><span class="line">echo This file is needed to run this program</span><br><span class="line">goto end</span><br><span class="line">:okSetclasspath</span><br><span class="line">call &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; %1</span><br><span class="line">if errorlevel 1 goto end</span><br></pre></td></tr></table></figure>
+
+<p>这说明<code>catalina.bat</code>又访问了该目录下的<code>setclasspath.bat</code>，而记事本打开<code>setclasspath.bat</code>后又发现它又访问了<code>catalina.bat</code>。</p>
+<hr/>
+
+<p>综上发现<code>startup.bat启动流程</code>为：<code>startup-&gt;catalina-&gt;setclasspath-&gt;catalina</code></p>
+<p><img src="http://qn.mfei.fun/img/QQH2E%7B7[T[W9X%L@PK%7B1RFD.hc" alt="img"></p>
+<h3 id="闪退原因："><a href="#闪退原因：" class="headerlink" title="闪退原因："></a>闪退原因：</h3><p>可见这三个文件一个都不能出问题。分析这三个文件得出闪退问题主要原因</p>
+<h4 id="原因一：java环境变量出问题了"><a href="#原因一：java环境变量出问题了" class="headerlink" title="原因一：java环境变量出问题了"></a>原因一：java<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F&spm=1001.2101.3001.7020">环境变量</a>出问题了</h4><p>从启动脚本中看得出Tomcat多次访问了环境变量信息，其中也包括java环境（毕竟Tomcat原码也是java啊）。故要先去<code>检查jdk的环境配置</code>。</p>
+<p><strong>注意：</strong><code>CATALINA_HOME</code>是Tomcat的环境，你可以选择不配置，不过这样的话你就只能在bin目录下启动Tomcat了，换句话来讲，配置完Tomcat环境后你可以把<code>startup.bat</code>复制到其他地方双击启动。</p>
+<h4 id="原因二：端口占用"><a href="#原因二：端口占用" class="headerlink" title="原因二：端口占用"></a>原因二：端口占用</h4><p>如果Tomcat已经被启动或者8080端口被占用，这自然是不允许的。</p>
+<p>你可以直接访问<code>localhost:8080</code>看能否访问Tomcat，如果可以那就说明是已经开启过了的，你可以双击<code>shutdown.bat</code>进行关闭。</p>
+<p>或者你可以在黑窗口中执行<code>netstat -ano | findstr &quot;8080&quot;</code>查看8080端口状态，如果是<code>TIME_WAIT</code>则说明未被占用。</p>
+<h4 id="原因三：你的Tomcat不干净了"><a href="#原因三：你的Tomcat不干净了" class="headerlink" title="原因三：你的Tomcat不干净了"></a>原因三：你的Tomcat不干净了</h4><p>到现在还没解决，那就有可能是你所下载的Tomcat是一些<code>绿色版、无敌版、xx版</code>等阉货或畸形货。此时就可在记事本打开<code>startup.bat</code>，在脚本最后面一行加上<code>pause</code>，保存后启动进行断点调试了。（不一定非得像我图片中加在倒数第二行，最后一行应该也可以，只要不放在前面的逻辑中就行）。</p>
+<p><img src="http://qn.mfei.fun/img/@UTBWFW8Z3]27P7OU7%FXQW.hc" alt="img"></p>
+<p>此时启动效果和之前没有区别，只是出了问题后不再会立刻闪退，而是你在窗口中按任意键后才会退出。OK！现在你就研究属于你的bug吧（记得解决完问题后把pause删掉）！</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/" rel="tag">tomcat</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" rel="tag">服务器</a></li></ul>
+
+    </footer>
+  </div>
+
+    
+ 
+   
+  
+</article>
+
+    
+    <article
   id="post-Nginx配置信息"
   class="article article-type-post"
   itemscope
