@@ -149,39 +149,6 @@
       </tags>
   </entry>
   <entry>
-    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
-    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
-    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
-<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
-<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
-<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
-<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
-<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
-<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
-<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
-<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
-<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
-<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
-<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
-<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
-<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
-<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
-<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>web开发</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-        <tag>tomcat</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Nginx配置信息</title>
     <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
     <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
@@ -249,6 +216,39 @@
       </tags>
   </entry>
   <entry>
+    <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
+    <url>/2020/09/30/java.lang.NoClassDefFoundError%20javaxservlethttpHttpServlet/</url>
+    <content><![CDATA[<p><code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code></p>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>最近对JavaWeb进行了简单复习，在对照以往笔记写好了一个<a href="https://so.csdn.net/so/search?q=Servlet&spm=1001.2101.3001.7020">Servlet</a>服务时发现无法启动该项目服务。针对<code>java.lang.NoClassDefFoundError: javax/servlet/http/HttpServlet</code>这个问题，百度结果有让<code>导jar包</code>的、有让<code>提升IDEA版本</code>的、有让<code>重装Tomcat</code>的，也有让<code>修改项目中web.xml</code>的，有些方法一看就不靠谱，于是我便尝试修改项目中web.<a href="https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020">xml</a>版本，发现依旧不行，但从中却获得了灵感。</p>
+<h3 id="问题分析："><a href="#问题分析：" class="headerlink" title="问题分析："></a>问题分析：</h3><p>Tomcat原码是基于java，于是乎便联想到了<code>Servlet</code>、<code>Tomcat</code>、<code>jdk</code>之间是否存在着<code>版本关联</code>。果然在对Tomcat配置文件以及新建web项目时引入Servlet依赖版本分析时发现了问题。</p>
+<h4 id="jdk与Tomcat"><a href="#jdk与Tomcat" class="headerlink" title="jdk与Tomcat"></a>jdk与Tomcat</h4><p>目前项目开发常用的jdk版本依旧为1.8，而我最先选用的Tomcat版本为10.0.12，那么问题来了，<code>2014</code>年发布的<code>jdk1.8</code>和<code>2020</code>年发布的<code>Tomcat10.0.0</code>他们它们可以兼容吗？我们新建项目一步步的看：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145214496.png" alt="image-20220919145214496"></p>
+<p>不难发现<code>jdk1.8的Servlet支持版本为4.0.1</code></p>
+<p><img src="http://qn.mfei.fun/img/Q%A%7B[VOX5%7BPWX@I$~9GODLN.hc" alt="img"></p>
+<p>而我们去Tomcat下载目录里看10版本以上的Tomcat所使用的的Servlet版本</p>
+<p><img src="http://qn.mfei.fun/img/BJ$K_H2%7BW%7DWWP$QV7W%DK1E.hc" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145326075.png" alt="image-20220919145326075"></p>
+<p>得出结论，<code>jdk1.8所依赖的Servlet版本为4.0，而Tomcat10.0.12依赖的Servlet版本为5.0，二者不匹配！</code><br>此时我们尝试将jdk版本由8上调至9：</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145352384.png" alt="image-20220919145352384"></p>
+<p>发现jdk对Servlet依赖版本变成了5.0.0。但是改动jdk版本并不是我们的本意，此时就需要<code>考虑降低Tomcat配置，使其匹配当前jdk</code>。<br>观察Tomcat9.0.54版本的配置文件：</p>
+<p><img src="http://qn.mfei.fun/img/$Y%60ECGS$JBA0C%5DL8W~JR63J.png" alt="img"></p>
+<p><img src="http://qn.mfei.fun/img/YHR@ZEQRP8HE0N4VDV0JG68.hc" alt="img"></p>
+<p>发现Tomcat9.0.54版本所依赖的Servlet版本为4.0</p>
+<h3 id="解决问题："><a href="#解决问题：" class="headerlink" title="解决问题："></a>解决问题：</h3><h4 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h4><p><code>降低Tomcat版本</code>使其依赖的Servlet版本与jdk所依赖的Servlet版本相匹配。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145605802.png" alt="image-20220919145605802"></p>
+<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p><code>提升jdk版本</code>，目的同样是使Tomcat依赖的Servlet版本与jdk所依赖的Servlet版本相匹配</p>
+<p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
+<h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>web开发</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
+        <tag>tomcat</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>startup.bat启动Tomcat闪退问题原因及解决</title>
     <url>/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/</url>
     <content><![CDATA[<h3 id="出现问题"><a href="#出现问题" class="headerlink" title="出现问题"></a>出现问题</h3><p>安装了Tomcat之后，开始用着还好好的。<code>莫名其妙</code>的就很突然出现了一些玄学问题，某一次开始我双击了<code>startup.bat</code>启动Tomcat时我的黑窗口就很不给面子的运行着运行着就<code>闪退</code>了，隐约间能看到个异常，可刚看清楚一个<code>caused by...</code>黑窗口就已经关闭了。经历了重启电脑等常规解决问题的思路后依旧无法解决。</p>
@@ -296,6 +296,32 @@
       </categories>
       <tags>
         <tag>服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>状态模式</title>
+    <url>/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>状态模式（State Pattern）：允许一个对象在其内部状态改变时改变它的行为，对象看起来似乎修改了它的类。其别名为状态对象（Objects for Status）。简而言之——<code>对象可根据不同情况作出不同行为</code>。</p>
+<p><code>阿里规范手册有言：</code>超过三层的if-else的逻辑判断代码可以使用卫语句（指在分支判断中提前返回）、策略模式、状态模式来实现，其中卫语句示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">today</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isBusy()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;change time.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (isFree()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;go to travel.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码对比演示"><a href="#代码对比演示" class="headerlink" title="代码对比演示"></a>代码对比演示</h3><p><strong>条件判断对象属性</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Happy&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sad&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sick&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>状态模式改造</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Student</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Student</span>();</span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Happy</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 跑着去学校</span></span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Sad</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 走着去学校</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 状态接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">changeState</span><span class="params">(State state)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>改用枚举</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Student.Happy.howToGo();</span><br><span class="line">        Student.Sad.howToGo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    Happy(<span class="keyword">new</span> <span class="title class_">Happy</span>()),</span><br><span class="line"></span><br><span class="line">    Sad(<span class="keyword">new</span> <span class="title class_">Sad</span>()),</span><br><span class="line"></span><br><span class="line">    Sick(<span class="keyword">new</span> <span class="title class_">Sick</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line"></span><br><span class="line">    Student(State state) &#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/~%60MMWQC6YI5N$N_RZM$9R%60S.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>设计模式</tag>
+        <tag>状态模式</tag>
       </tags>
   </entry>
   <entry>
