@@ -11,7 +11,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title>观察者模式 |  风大，进来说</title>
+      <title>冒泡排序的异或优化 |  风大，进来说</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/favicon.ico" />
@@ -57,7 +57,7 @@
     <main class="content on">
       <section class="outer">
   <article
-  id="post-观察者模式"
+  id="post-冒泡排序的异或优化"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -68,7 +68,7 @@
     <header class="article-header">
        
 <h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  观察者模式
+  冒泡排序的异或优化
 </h1>
  
 
@@ -76,11 +76,11 @@
     </header>
      
     <div class="article-meta">
-      <a href="/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" class="article-date">
-  <time datetime="2021-03-22T08:40:25.000Z" itemprop="datePublished">2021-03-22</time>
+      <a href="/2020/10/14/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F%E7%9A%84%E5%BC%82%E6%88%96%E4%BC%98%E5%8C%96/" class="article-date">
+  <time datetime="2020-10-14T06:16:02.000Z" itemprop="datePublished">2020-10-14</time>
 </a> 
   <div class="article-category">
-    <a class="article-category-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a>
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
   </div>
   
 <div class="word_count">
@@ -88,7 +88,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">544</span>
+            <span class="post-count">650</span>
         </span>
     </span>
 
@@ -112,13 +112,37 @@
   
     <div class="article-entry" itemprop="articleBody">
        
-  <h2 id="了解观察者模式"><a href="#了解观察者模式" class="headerlink" title="了解观察者模式"></a>了解观察者模式</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>观察者模式（Observer Pattern）。定义对象间的一种<code>一对多的依赖关系</code>，使得每当一个对象状态发生改变时，其相关依赖对象皆得到通知并被自动更新。</p>
-<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><p>张三欠了很多人钱，债主每天来要钱对谁都不好。于是就可以让张三有钱时主动通知债主，没钱时就让债主等着（债主就是观察者，观察张三有没有钱）。于是观察者模式又叫<code>发布者模式</code>。</p>
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 观察者模式</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ObserverPattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 张三为借钱者</span></span><br><span class="line">        <span class="type">Debit</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DebitImpl</span>();</span><br><span class="line">        <span class="comment">// 向老板借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Boss</span>());</span><br><span class="line">        <span class="comment">// 向朋友借钱</span></span><br><span class="line">        zhangSan.borrow(<span class="keyword">new</span> <span class="title class_">Friend</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自行改变判断state为true时（有钱后）通知还钱</span></span><br><span class="line">        zhangSan.notifyCreadits();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 借贷者接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 向贷款方借钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span>;</span><br><span class="line">    <span class="comment">// 通知债主自己要还钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款者</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DebitImpl</span> <span class="keyword">implements</span> <span class="title class_">Debit</span>&#123;</span><br><span class="line">    <span class="comment">// 创建一个数据结构存放这些债主</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Credit&gt; allCredits = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="comment">// 当为true时表示有钱，可以通知还钱</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">state</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">borrow</span><span class="params">(Credit credit)</span> &#123;</span><br><span class="line">        <span class="comment">// 每借一个人的钱就把这个人存到集合中去</span></span><br><span class="line">        allCredits.add(credit);</span><br><span class="line">        System.out.println(<span class="string">&quot;张三借钱！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">notifyCreadits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 还钱时直接遍历集合通知还钱</span></span><br><span class="line">        allCredits.forEach(credit -&gt; credit.takeMoney());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 贷款方（债主）接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line">    <span class="comment">// 债主要钱</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Boss</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Boss得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Friend</span> <span class="keyword">implements</span> <span class="title class_">Credit</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">takeMoney</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Friend得到偿还&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  <h2 id="你会写冒泡排序吗"><a href="#你会写冒泡排序吗" class="headerlink" title="你会写冒泡排序吗"></a>你会写<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>吗</h2><p>给你一个数组，让你排序，怎么办？（别跟我扯sort函数）<br>方法很多，但是看标题，今天就用冒泡！</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920141924627.png" alt="image-20220920141924627"></p>
+<p>你可能会这样写？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/%7DBZ6CUEI4CJWAZASBC54W1K.png" alt="img"></p>
-<h2 id="观察者模式应用"><a href="#观察者模式应用" class="headerlink" title="观察者模式应用"></a>观察者模式应用</h2><h3 id="情景使用——天气预报"><a href="#情景使用——天气预报" class="headerlink" title="情景使用——天气预报"></a>情景使用——天气预报</h3><p>描述：气象站想要把自己测量的温度、湿度、天气等信息以公告形式发布出去（如：自己的官网或QQ、微信等第三方），那么他就需要设计开放型的的API（提供温度、湿度、气压等接口），便于其他第三方也能接入气象站获取数据。测量数据更新时要能实时的通知给第三方。</p>
-<p><img src="http://qn.mfei.fun/img/image-20220919152121253.png" alt="image-20220919152121253"></p>
+<p>也或许你会这样写</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="有没有想过不要temp？"><a href="#有没有想过不要temp？" class="headerlink" title="有没有想过不要temp？"></a>有没有想过不要temp？</h2><p>temp作为冒泡排序中的经典变量，你可曾想过哪一天能够把它去除？把值交换做到想象中的一样简单，交换就是交换，为嘛我的先给路人甲，你的再给我，你再去向路人甲要，没路人甲就不办事了吗？</p>
+<p>你不妨试一下这种写法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">                arr[i] ^= arr[j];</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你看到了，这次没有temp了。</p>
+<h2 id="用异或运算交换变量值"><a href="#用异或运算交换变量值" class="headerlink" title="用异或运算交换变量值"></a>用<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%BC%82%E6%88%96%E8%BF%90%E7%AE%97&spm=1001.2101.3001.7020">异或运算</a>交换变量值</h2><p>你我都懂，异或运算是用在二进制之间的一种运算，同则0异则1…巴拉巴拉…。<code>1^1=0</code>、<code>1^0=1</code>、<code>0^0=0</code></p>
+<p>那我就是要用 5^6 会怎么样呢？<code>5^6=?</code></p>
+<p>那必是一个和5、6都无关的值啊，你在想什么？</p>
+<p><strong>但是课本上有这样三个公式：<code>a^a=0</code>、<code>a^a^b=b</code>、<code>0^b=b</code></strong></p>
+<p>第一个我知道你懂，我第一次看也懂了，那么第二个…</p>
+<p>假设<code>b=3</code>，因为<code>a^a=0</code>，所以<code>a^a^b=0^b=0^3</code>，<code>0^3</code>…</p>
+<p>3的二进制是11,<code>00^11=11</code> → 还是3！</p>
+<p>整数转二进制不过是01组合，<code>0^0=0</code>，<code>1^0=1</code>，那不就是<code>0^b=b</code></p>
+<p><strong>还不懂？</strong></p>
+<p>再看看这组代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">arr[j] ^= arr[i];</span><br><span class="line">arr[i] ^= arr[j];</span><br><span class="line">arr[j] ^= arr[i];</span><br></pre></td></tr></table></figure>
+
+<p>设 <code>arr[i]=X</code>、<code>arr[j]=Y</code></p>
+<p>①<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X</code></p>
+<p>②<code>arr[i] ^= arr[j];</code> → <code>arr[i]=X^Y^X=Y</code> → <code>arr[i]=Y</code></p>
+<p>③<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X^Y=X</code> → <code>arr[j]=X</code></p>
+<h2 id="引申问题"><a href="#引申问题" class="headerlink" title="引申问题"></a>引申问题</h2><p><strong>给你一个数组，里面有若干数据，其中只有一个数据元素出现的次数是奇数次，请你找出这个出现次数为奇数次的元素。</strong></p>
+<p>对！文章看到这里了，你还遍历元素，给每个元素都加一个计数器，用<code>==</code>对比判断。</p>
  
       <!-- reward -->
       
@@ -189,12 +213,12 @@
     <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://spencedou.github.io/2021/03/22/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://spencedou.github.io/2020/10/14/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F%E7%9A%84%E5%BC%82%E6%88%96%E4%BC%98%E5%8C%96/" alt="微信分享二维码">
     </div>
 </div>
 
 <div id="share-mask"></div>  
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" rel="tag">观察者模式</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
 
     </footer>
   </div>
@@ -202,19 +226,19 @@
    
   <nav class="article-nav">
     
-      <a href="/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" class="article-nav-link">
+      <a href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/" class="article-nav-link">
         <strong class="article-nav-caption">上一篇</strong>
         <div class="article-nav-title">
           
-            状态模式
+            Docker运行Nginx容器
           
         </div>
       </a>
     
     
-      <a href="/2020/11/02/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84%E5%8F%8C%E6%8C%87%E9%92%88%E4%BC%98%E5%8C%96/" class="article-nav-link">
+      <a href="/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
-        <div class="article-nav-title">选择排序的双指针优化</div>
+        <div class="article-nav-title">JavaWeb——Servlet</div>
       </a>
     
   </nav>

@@ -282,8 +282,50 @@
       </tags>
   </entry>
   <entry>
+    <title>冒泡排序的异或优化</title>
+    <url>/2020/10/14/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F%E7%9A%84%E5%BC%82%E6%88%96%E4%BC%98%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="你会写冒泡排序吗"><a href="#你会写冒泡排序吗" class="headerlink" title="你会写冒泡排序吗"></a>你会写<a href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>吗</h2><p>给你一个数组，让你排序，怎么办？（别跟我扯sort函数）<br>方法很多，但是看标题，今天就用冒泡！</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920141924627.png" alt="image-20220920141924627"></p>
+<p>你可能会这样写？</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也或许你会这样写</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="有没有想过不要temp？"><a href="#有没有想过不要temp？" class="headerlink" title="有没有想过不要temp？"></a>有没有想过不要temp？</h2><p>temp作为冒泡排序中的经典变量，你可曾想过哪一天能够把它去除？把值交换做到想象中的一样简单，交换就是交换，为嘛我的先给路人甲，你的再给我，你再去向路人甲要，没路人甲就不办事了吗？</p>
+<p>你不妨试一下这种写法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">                arr[i] ^= arr[j];</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你看到了，这次没有temp了。</p>
+<h2 id="用异或运算交换变量值"><a href="#用异或运算交换变量值" class="headerlink" title="用异或运算交换变量值"></a>用<a href="https://so.csdn.net/so/search?q=%E5%BC%82%E6%88%96%E8%BF%90%E7%AE%97&spm=1001.2101.3001.7020">异或运算</a>交换变量值</h2><p>你我都懂，异或运算是用在二进制之间的一种运算，同则0异则1…巴拉巴拉…。<code>1^1=0</code>、<code>1^0=1</code>、<code>0^0=0</code></p>
+<p>那我就是要用 5^6 会怎么样呢？<code>5^6=?</code></p>
+<p>那必是一个和5、6都无关的值啊，你在想什么？</p>
+<p><strong>但是课本上有这样三个公式：<code>a^a=0</code>、<code>a^a^b=b</code>、<code>0^b=b</code></strong></p>
+<p>第一个我知道你懂，我第一次看也懂了，那么第二个…</p>
+<p>假设<code>b=3</code>，因为<code>a^a=0</code>，所以<code>a^a^b=0^b=0^3</code>，<code>0^3</code>…</p>
+<p>3的二进制是11,<code>00^11=11</code> → 还是3！</p>
+<p>整数转二进制不过是01组合，<code>0^0=0</code>，<code>1^0=1</code>，那不就是<code>0^b=b</code></p>
+<p><strong>还不懂？</strong></p>
+<p>再看看这组代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">arr[j] ^= arr[i];</span><br><span class="line">arr[i] ^= arr[j];</span><br><span class="line">arr[j] ^= arr[i];</span><br></pre></td></tr></table></figure>
+
+<p>设 <code>arr[i]=X</code>、<code>arr[j]=Y</code></p>
+<p>①<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X</code></p>
+<p>②<code>arr[i] ^= arr[j];</code> → <code>arr[i]=X^Y^X=Y</code> → <code>arr[i]=Y</code></p>
+<p>③<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X^Y=X</code> → <code>arr[j]=X</code></p>
+<h2 id="引申问题"><a href="#引申问题" class="headerlink" title="引申问题"></a>引申问题</h2><p><strong>给你一个数组，里面有若干数据，其中只有一个数据元素出现的次数是奇数次，请你找出这个出现次数为奇数次的元素。</strong></p>
+<p>对！文章看到这里了，你还遍历元素，给每个元素都加一个计数器，用<code>==</code>对比判断。</p>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>支付宝扫码支付实现</title>
-    <url>/2022/09/20/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/</url>
+    <url>/2022/01/10/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p><code>前言：</code>在一次项目开发中我的业务模块涉及<a href="https://blog.csdn.net/D_ps19990501/article/details/122856720">微信扫码支付</a>和支付宝扫码支付。在查阅现有技术性文章后发现，许多文章并不能走通，于是我便阅读了官方文档，形成了这篇总结性文章，希望对读者有所帮助。</p>
 <p><a href="https://www.alipay.com/">支付宝平台</a><br><a href="https://developers.alipay.com/">支付宝开发者中心</a><br><a href="https://open.alipay.com/">支付宝开放平台</a><br><a href="https://opendocs.alipay.com/open/194">API开发文档</a><br><a href="https://github.com/alipay/alipay-easysdk/tree/master/java">官方demo-easySDK</a></p>
 <h2 id="支付宝平台信息配置"><a href="#支付宝平台信息配置" class="headerlink" title="支付宝平台信息配置"></a>支付宝平台信息配置</h2><p>相信查询此刻你一定已经注册登陆过<a href="https://www.alipay.com/">支付宝平台</a>了，在此不多赘述。需在平台中获取的开发所需信息如下：</p>
@@ -415,8 +457,35 @@
       </tags>
   </entry>
   <entry>
+    <title>选择排序的双指针优化</title>
+    <url>/2020/11/02/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84%E5%8F%8C%E6%8C%87%E9%92%88%E4%BC%98%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="先整清楚选择排序"><a href="#先整清楚选择排序" class="headerlink" title="先整清楚选择排序"></a>先整清楚<a href="https://so.csdn.net/so/search?q=%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">选择排序</a></h2><h3 id="什么是选择排序？"><a href="#什么是选择排序？" class="headerlink" title="什么是选择排序？"></a>什么是选择排序？</h3><p><code>矮子里面挑将军</code>——双重循环<a href="https://so.csdn.net/so/search?q=%E9%81%8D%E5%8E%86&spm=1001.2101.3001.7020">遍历</a>数组，每经过一轮比较，找到最小元素的下标，将其交换至首位，下次排序时它就不参与排序了，而是从<strong>剩余</strong>的数据中挑选最值。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920143957257.png" alt="image-20220920143957257"></p>
+<h3 id="手写一个选择排序"><a href="#手写一个选择排序" class="headerlink" title="手写一个选择排序"></a>手写一个选择排序</h3><p>目标数组：{1, 0, 3, 8, 7, 2, 0, 5, 4, 6}</p>
+<p>目标结果：顺序升序排序</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">selectionSort</span><span class="params">()</span> &#123;</span><br><span class="line">	<span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="type">int</span> minIndex;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        minIndex = i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt; arr.length; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[minIndex] &gt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最小值的下标</span></span><br><span class="line">                minIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将最小元素交换至首位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">temp</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[minIndex];</span><br><span class="line">        arr[minIndex] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 输出一下</span></span><br><span class="line">	<span class="keyword">for</span>(<span class="type">int</span> i : arr) &#123;</span><br><span class="line">		System.err.print(i);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="选择排序和冒泡排序有什么区别？"><a href="#选择排序和冒泡排序有什么区别？" class="headerlink" title="选择排序和冒泡排序有什么区别？"></a>选择排序和<a href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>有什么区别？</h3><p><code>回想下两种排序的原理图，还是有不一样的地方的</code></p>
+<p>冒泡排序和选择排序虽然都是双for循环排序，时间复杂度也都是O(n^2)…巴拉巴拉…。但是！<strong>冒泡排序每轮选取最值时，这个比较的过程是在不断地交换的；选</strong></p>
+<p><strong>择排序每轮选取最值是通过一个变量记录最值索引，该轮比较结束后进行一次交换</strong>。可见选择排序很大程度上减少了交换次数。</p>
+<p><code>你以为这就完了</code>？这两种排序方式还有个极大的差别就是——<strong>冒泡排序是稳定的，选择排序是不稳定（排序前后相同值元素的前后位置可能会发生变化）的</strong>。</p>
+<hr>
+
+<h2 id="算法优化"><a href="#算法优化" class="headerlink" title="算法优化"></a>算法优化</h2><h3 id="最大值和最小值每轮比较只能得其一吗？"><a href="#最大值和最小值每轮比较只能得其一吗？" class="headerlink" title="最大值和最小值每轮比较只能得其一吗？"></a>最大值和最小值每轮比较只能得其一吗？</h3><p><code>我们可以控制选择排序每轮比较选择出最大值还是者最小值，那么，我全都要呢？</code><br>本着这个目标，就上面的代码，稍作优化：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">selectionSort</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length/<span class="number">2</span>; i++) &#123;</span><br><span class="line">        System.out.print(<span class="string">&quot;第&quot;</span>+(i+<span class="number">1</span>)+<span class="string">&quot;次选最值——&quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">minIndex</span> <span class="operator">=</span> i;</span><br><span class="line">        <span class="type">int</span> <span class="variable">maxIndex</span> <span class="operator">=</span> arr.length - <span class="number">1</span> - i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt;= arr.length - <span class="number">1</span> - i; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[minIndex] &gt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最小值的下标</span></span><br><span class="line">                minIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (arr[maxIndex] &lt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最大值的下标</span></span><br><span class="line">                maxIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将最小元素交换至首位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">temp</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[minIndex];</span><br><span class="line">        arr[minIndex] = temp;</span><br><span class="line">        System.out.print(<span class="string">&quot;最小值为：&quot;</span>+arr[i]);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这步很关键！</span></span><br><span class="line">        <span class="keyword">if</span> (maxIndex == i)&#123;</span><br><span class="line">            maxIndex = minIndex;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将最大元素交换至末位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">tem</span> <span class="operator">=</span> arr[arr.length - i - <span class="number">1</span>];</span><br><span class="line">        arr[arr.length - i - <span class="number">1</span>] = arr[maxIndex];</span><br><span class="line">        arr[maxIndex] = tem;</span><br><span class="line">        System.out.println(<span class="string">&quot;最大值为：&quot;</span>+arr[arr.length - i - <span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 输出一下</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i : arr) &#123;</span><br><span class="line">        System.err.print(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结的话就不说了，<strong>外层循环次数少了一半，内层循环次数也少了一半</strong>，你懂的。</p>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>微信扫码支付实现</title>
-    <url>/2022/09/20/%E5%BE%AE%E4%BF%A1%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/</url>
+    <url>/2022/01/06/%E5%BE%AE%E4%BF%A1%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p><code>前言：</code>在一次项目开发中我的业务模块涉及微信扫码支付和<a href="https://blog.csdn.net/D_ps19990501/article/details/122870559">支付宝扫码支付</a>。在查阅现有文档后发现，大部分文章还停留在V2支付，部分文章介绍了V3支付但是并不能走通，于是我便阅读了官方文档，形成了这篇总结性文章，希望对读者有所帮助。</p>
 <p><a href="https://pay.weixin.qq.com/wiki/doc/apiv3/open/pay/chapter2_7_2.shtml">官方开发文档</a><br><a href="https://github.com/wechatpay-apiv3/wechatpay-apache-httpclient">官方SDK开发工具包</a><br><a href="https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml">API字典</a></p>
 <h2 id="微信平台信息配置"><a href="#微信平台信息配置" class="headerlink" title="微信平台信息配置"></a>微信平台信息配置</h2><p>相信此刻你一定已经注册并登陆过 <a href="https://pay.weixin.qq.com/index.php/core/home/login">微信开放平台</a> 了，在此不多赘述。需在平台中获取的开发所需信息如下：</p>
