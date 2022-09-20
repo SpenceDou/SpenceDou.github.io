@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+        
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>微信扫码支付实现 |  风大，进来说</title>
+  <meta name="generator" content="hexo-theme-ayer">
+      
+      <link rel="shortcut icon" href="/favicon.ico" />
+       
+<link rel="stylesheet" href="/dist/main.css">
+
+      
+<link rel="stylesheet" href="/css/fonts/remixicon.css">
+
+      
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="https://cdn.staticfile.org/pace/1.2.4/pace.min.js"></script>
+       
+ 
+
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bulma@5.0.1/bulma.min.css"
+      />
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <link rel="alternate" href="/atom.xml" title="风大，进来说" type="application/atom+xml">
+</head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+      <canvas width="1777" height="841"
+        style="position: fixed; left: 0px; top: 0px; z-index: 99999; pointer-events: none;"></canvas>
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-微信扫码支付实现"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  微信扫码支付实现
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2022/09/20/%E5%BE%AE%E4%BF%A1%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time datetime="2022-09-20T02:47:50.000Z" itemprop="datePublished">2022-09-20</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E4%B8%89%E6%96%B9%E5%AF%B9%E6%8E%A5/">三方对接</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">2.5k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">11 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><code>前言：</code>在一次项目开发中我的业务模块涉及微信扫码支付和<a target="_blank" rel="noopener" href="https://blog.csdn.net/D_ps19990501/article/details/122870559">支付宝扫码支付</a>。在查阅现有文档后发现，大部分文章还停留在V2支付，部分文章介绍了V3支付但是并不能走通，于是我便阅读了官方文档，形成了这篇总结性文章，希望对读者有所帮助。</p>
+<p><a target="_blank" rel="noopener" href="https://pay.weixin.qq.com/wiki/doc/apiv3/open/pay/chapter2_7_2.shtml">官方开发文档</a><br><a target="_blank" rel="noopener" href="https://github.com/wechatpay-apiv3/wechatpay-apache-httpclient">官方SDK开发工具包</a><br><a target="_blank" rel="noopener" href="https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml">API字典</a></p>
+<h2 id="微信平台信息配置"><a href="#微信平台信息配置" class="headerlink" title="微信平台信息配置"></a>微信平台信息配置</h2><p>相信此刻你一定已经注册并登陆过 <a target="_blank" rel="noopener" href="https://pay.weixin.qq.com/index.php/core/home/login">微信开放平台</a> 了，在此不多赘述。需在平台中获取的开发所需信息如下：</p>
+<p><code>MERCHANT_ID</code>：商户号<br><code>MERCHANT_SERIAL_NUMBER</code>：商户<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=API&spm=1001.2101.3001.7020">API</a>证书的证书序列号<br><code>MERCHANT_PRIVATEKEY</code>：商户API<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E7%A7%81%E9%92%A5&spm=1001.2101.3001.7020">私钥</a><br><code>AIV3KEY</code>：API v3密钥<br><code>APP_ID</code>：小程序的APPID</p>
+<p><strong>注意</strong>：想要获取以上信息，必须是商户主账号才可以（即便是管理员，部分操作也无法完成）。<br><code>下面我们来逐个获取以上参数</code></p>
+<h3 id="获取商户号"><a href="#获取商户号" class="headerlink" title="获取商户号"></a>获取商户号</h3><ol>
+<li><p>登录微信开放平台</p>
+</li>
+<li><p>如果是主账号，如图红框位置即为商户号。如果不是商户主帐号，显示的则为个人帐号（如图为子管理员账号）<img src="http://qn.mfei.fun/img/image-20220920105144822.png" alt="image-20220920105144822"></p>
+</li>
+<li><p>如果登陆账号不是主账号，则需要依次点击<code>产品中心</code>→<code>AppID账号管理</code>→<code>+关联AppID</code>，此时即可看到商户号<img src="http://qn.mfei.fun/img/image-20220920105304787.png" alt="image-20220920105304787"></p>
+</li>
+</ol>
+<h3 id="获取证书序列号"><a href="#获取证书序列号" class="headerlink" title="获取证书序列号"></a>获取证书序列号</h3><p><code>该步骤操作需要商户主账号才可完成。</code></p>
+<ol>
+<li>依次点击<code>账户中心</code>→<code>API安全</code>，此时就进入了API安全页，此页面可设置一个证书两个密钥，API证书是根据网站提供的工具生成的（具体下载操作可参考网站中给出的指引）</li>
+</ol>
+<p><img src="http://qn.mfei.fun/img/image-20220920105436865.png" alt="image-20220920105436865"></p>
+<ol start="2">
+<li><p>对微信工具生成的文件进行解压缩得到如下信息，后续操作可根据’<code>证书使用说明.txt</code>进行（提示一下：Windows用户直接双击<code>apiclient_cert.p12</code>文件即可上传证书）。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920105620364.png" alt="image-20220920105620364"></p>
+</li>
+<li><p>在根据网站指引完成了API证书上传后，商户主账号就可直接点击<code>管理证书</code>查看证书序列号。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920105701828.png" alt="image-20220920105701828"></p>
+</li>
+</ol>
+<h3 id="获取API私钥"><a href="#获取API私钥" class="headerlink" title="获取API私钥"></a>获取API私钥</h3><p>在获取证书序列号的第二步操作中的<code>apiclient_key.pem</code>文件即为所需的商户API私钥。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920105751973.png" alt="image-20220920105751973"></p>
+<p><strong>注意</strong>：此处有一个小坑，在粘贴复制密钥时，除了保留<code>-----BEGIN PRIVATE KEY-----</code>和<code>-----END PRIVATE KEY-----</code>的换行外，中间内容在粘贴时一定要去除复制时产生的换行符（推荐复制内容后去网上的<code>去换行工具</code>中去除下换行符）</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920105839862.png" alt="image-20220920105839862"></p>
+<h3 id="获取APIv3密钥"><a href="#获取APIv3密钥" class="headerlink" title="获取APIv3密钥"></a>获取APIv3密钥</h3><ol>
+<li><p>依旧是在API安全页，直接点击<code>设置</code>来设置APIv3密钥即可。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920105919903.png" alt="image-20220920105919903"></p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110022358.png" alt="image-20220920110022358"></p>
+</li>
+<li><p>APIv3密钥要求是<code>32个字符，支持数字/大小写字母</code>，可以在随机生成字符串的线上工具中进行生成</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110118699.png" alt="image-20220920110118699"></p>
+</li>
+<li><p>将上一步生成的密钥复制粘贴，完成手机号验证码安全认证即可完成APIv3密钥的设置</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110208295.png" alt="image-20220920110208295"></p>
+</li>
+</ol>
+<h3 id="获取并绑定APPID"><a href="#获取并绑定APPID" class="headerlink" title="获取并绑定APPID"></a>获取并绑定APPID</h3><p><code>公众号和小程序的AppID获取方式雷同，具体参考如图所示指引</code></p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110308848.png" alt="image-20220920110308848"></p>
+<ol>
+<li><p>登录<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/">微信公众平台</a>，依次点击<code>设置</code>→<code>基本设置</code>，页面最下方账号信息处即可看到<code>AppID（小程序ID）</code></p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110345880.png" alt="image-20220920110345880"></p>
+</li>
+<li><p>在微信公众平台，依次点击<code>设置</code>→<code>基本设置</code>，找到<code>主体信息</code></p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110414964.png" alt="image-20220920110414964"></p>
+</li>
+<li><p>回到<a target="_blank" rel="noopener" href="https://pay.weixin.qq.com/index.php/core/home/login">微信开放平台</a>，依次点击<code>产品中心</code>→<code>AppID账号管理</code>→<code>+关联AppID</code>，将上一步获取到的<code>AppID</code>和<code>主体信息</code>粘贴在此并提交</p>
+<p><img src="http://qn.mfei.fun/img/63%7DY%5DE4%7B%60~BJ%5DA_0SQXM5WO.png" alt="img"></p>
+</li>
+<li><p>回到微信公众平台授权即可</p>
+<p><img src="http://qn.mfei.fun/img/6R8XM6VGU1VD0D%4HIP%7D8$V.png" alt="img"></p>
+</li>
+</ol>
+<h3 id="开通支付产品"><a href="#开通支付产品" class="headerlink" title="开通支付产品"></a>开通支付产品</h3><ol>
+<li><p>登录微信开放平台，来到<code>产品中心</code>页面。</p>
+</li>
+<li><p>开启支付产品中的<code>Native支付</code>(扫码支付)功能。</p>
+</li>
+<li><p>开启运营工具中的<code>企业付款到零钱</code>(付款资金直接进入微信零钱，提现方式根据用户需求来开通不同产品即可)。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920110605286.png" alt="image-20220920110605286"></p>
+</li>
+</ol>
+<h2 id="代码中的配置"><a href="#代码中的配置" class="headerlink" title="代码中的配置"></a>代码中的配置</h2><p>对于v3支付来说，此时可谓万事俱备只欠东风，下面来配置代码中的工具类和第三方请求。</p>
+<h3 id="引入依赖"><a href="#引入依赖" class="headerlink" title="引入依赖"></a>引入依赖</h3><p>此处引入的是<code>v3支付</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.github.wechatpay-apiv3&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;wechatpay-apache-httpclient&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">0.3</span><span class="number">.0</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置微信工具类"><a href="#配置微信工具类" class="headerlink" title="配置微信工具类"></a>配置微信工具类</h3><p>此工具类仅供参考，配置信息也可根据个人喜好放在yml文件中（为方便阅读此处放在类中作为常量）。<br><code>此处的工具类有以下作用：</code></p>
+<ol>
+<li>配置商户信息</li>
+<li>微信接口请求所需工具方法</li>
+<li>微信验签</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WeChartUtil</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">MERCHANT_ID</span> <span class="operator">=</span> <span class="string">&quot;商户id&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">MERCHANT_SERIAL_NUMBER</span> <span class="operator">=</span> <span class="string">&quot;证书序列号&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">MERCHANT_PRIVATEKEY</span> <span class="operator">=</span> <span class="string">&quot;-----BEGIN PRIVATE KEY-----\n&quot;</span> +</span><br><span class="line"><span class="string">&quot;你的密钥内容（记得去换行）&quot;</span> +</span><br><span class="line">  <span class="string">&quot;\n&quot;</span> + <span class="string">&quot;-----END PRIVATE KEY-----&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">AIV3KEY</span> <span class="operator">=</span> <span class="string">&quot;APIv3密钥&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">NOTIFY_URL</span> <span class="operator">=</span> <span class="string">&quot;回调地址&quot;</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">APP_ID</span> <span class="operator">=</span> <span class="string">&quot;小程序的AppID&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 生成订单号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 11:35 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">orderNo</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> UUID.randomUUID().toString()</span><br><span class="line">                .replaceAll(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;&quot;</span>)</span><br><span class="line">                .substring(<span class="number">0</span>, <span class="number">32</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 生成订单过期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 11:41 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> java.time.LocalDateTime</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">timeExpire</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//过期时间：5分钟后</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">time</span> <span class="operator">=</span> <span class="number">5</span>*<span class="number">60</span>*<span class="number">1000</span>;</span><br><span class="line">        <span class="type">SimpleDateFormat</span> <span class="variable">simpleDateFormat</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd&#x27;T&#x27;HH:mm:ssXXX&quot;</span>);</span><br><span class="line">        <span class="type">Date</span> <span class="variable">now</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Date</span>();</span><br><span class="line">        <span class="comment">//30分钟后的时间</span></span><br><span class="line">        <span class="type">Date</span> <span class="variable">afterDate</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Date</span>(now.getTime() + time);</span><br><span class="line">        <span class="keyword">return</span> simpleDateFormat.format(afterDate);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 分转元 保留小数点后两位</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 11:38 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> num 转换金额</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> java.lang.String</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> BigDecimal <span class="title function_">transition</span><span class="params">(Integer num)</span> &#123;</span><br><span class="line">        <span class="type">BigDecimal</span> <span class="variable">bigDecimal1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BigDecimal</span>(num + <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="type">BigDecimal</span> <span class="variable">bigDecimal2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BigDecimal</span>(<span class="string">&quot;100.00&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> bigDecimal1.divide(bigDecimal2).setScale(<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 微信支付回调签名验证</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 16:30 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> serial 请求头序列号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> message 请求报文</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> signature 签名</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> boolean</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">boolean</span> <span class="title function_">signVerify</span><span class="params">(String serial, String message, String signature)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">PrivateKey</span> <span class="variable">key</span> <span class="operator">=</span> PemUtil.loadPrivateKey(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(MERCHANT_PRIVATEKEY.getBytes(StandardCharsets.UTF_8)));</span><br><span class="line">            <span class="type">ScheduledUpdateCertificatesVerifier</span> <span class="variable">verifier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledUpdateCertificatesVerifier</span>(</span><br><span class="line">                    <span class="keyword">new</span> <span class="title class_">WechatPay2Credentials</span>(MERCHANT_ID, <span class="keyword">new</span> <span class="title class_">PrivateKeySigner</span>(MERCHANT_SERIAL_NUMBER, key)),</span><br><span class="line">                    AIV3KEY.getBytes(StandardCharsets.UTF_8));</span><br><span class="line">            <span class="keyword">return</span> verifier.verify(serial, message.getBytes(StandardCharsets.UTF_8), signature);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 解密密文</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 17:04 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> body 请求数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> java.lang.String</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">decryptOrder</span><span class="params">(String body)</span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">AesUtil</span> <span class="variable">util</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AesUtil</span>(AIV3KEY.getBytes(StandardCharsets.UTF_8));</span><br><span class="line">            <span class="type">ObjectMapper</span> <span class="variable">objectMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>();</span><br><span class="line">            <span class="type">JsonNode</span> <span class="variable">node</span> <span class="operator">=</span> objectMapper.readTree(body);</span><br><span class="line">            <span class="type">JsonNode</span> <span class="variable">resource</span> <span class="operator">=</span> node.get(<span class="string">&quot;resource&quot;</span>);</span><br><span class="line">            <span class="type">String</span> <span class="variable">ciphertext</span> <span class="operator">=</span> resource.get(<span class="string">&quot;ciphertext&quot;</span>).textValue();</span><br><span class="line">            <span class="type">String</span> <span class="variable">associatedData</span> <span class="operator">=</span> resource.get(<span class="string">&quot;associated_data&quot;</span>).textValue();</span><br><span class="line">            <span class="type">String</span> <span class="variable">nonce</span> <span class="operator">=</span> resource.get(<span class="string">&quot;nonce&quot;</span>).textValue();</span><br><span class="line">            <span class="keyword">return</span> util.decryptToString(associatedData.getBytes(StandardCharsets.UTF_8), nonce.getBytes(StandardCharsets.UTF_8), ciphertext);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException | GeneralSecurityException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span> Spence_Dou</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span> 关闭订单</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Date</span> 17:34 2021/12/23</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Param</span> outTradeNo 订单号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">closeOrder</span><span class="params">(String outTradeNo)</span> &#123;</span><br><span class="line">        <span class="type">PrivateKey</span> <span class="variable">key</span> <span class="operator">=</span> PemUtil.loadPrivateKey(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(MERCHANT_PRIVATEKEY.getBytes(StandardCharsets.UTF_8)));</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用定时更新的签名验证器，不需要传入证书</span></span><br><span class="line">        <span class="type">ScheduledUpdateCertificatesVerifier</span> <span class="variable">verifier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledUpdateCertificatesVerifier</span>(</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">WechatPay2Credentials</span>(MERCHANT_ID, <span class="keyword">new</span> <span class="title class_">PrivateKeySigner</span>(MERCHANT_SERIAL_NUMBER, key)),</span><br><span class="line">                AIV3KEY.getBytes(StandardCharsets.UTF_8));</span><br><span class="line"></span><br><span class="line">        <span class="type">WechatPayHttpClientBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> WechatPayHttpClientBuilder.create()</span><br><span class="line">                .withMerchant(MERCHANT_ID, MERCHANT_SERIAL_NUMBER, key)</span><br><span class="line">                .withValidator(<span class="keyword">new</span> <span class="title class_">WechatPay2Validator</span>(verifier));</span><br><span class="line">        <span class="type">CloseableHttpClient</span> <span class="variable">httpClient</span> <span class="operator">=</span> builder.build();</span><br><span class="line"></span><br><span class="line">        <span class="type">HttpPost</span> <span class="variable">httpPost</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpPost</span>(<span class="string">&quot;https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no/&quot;</span>+outTradeNo+<span class="string">&quot;/close&quot;</span>);</span><br><span class="line">        httpPost.addHeader(<span class="string">&quot;Accept&quot;</span>, <span class="string">&quot;application/json&quot;</span>);</span><br><span class="line">        httpPost.addHeader(<span class="string">&quot;Content-type&quot;</span>,<span class="string">&quot;application/json; charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">            <span class="type">ObjectMapper</span> <span class="variable">objectMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>();</span><br><span class="line"></span><br><span class="line">            <span class="type">ObjectNode</span> <span class="variable">rootNode</span> <span class="operator">=</span> objectMapper.createObjectNode();</span><br><span class="line">            rootNode.put(<span class="string">&quot;mchid&quot;</span>,MERCHANT_ID);</span><br><span class="line">            objectMapper.writeValue(bos, rootNode);</span><br><span class="line"></span><br><span class="line">            httpPost.setEntity(<span class="keyword">new</span> <span class="title class_">StringEntity</span>(bos.toString(<span class="string">&quot;UTF-8&quot;</span>), <span class="string">&quot;UTF-8&quot;</span>));</span><br><span class="line">            <span class="type">CloseableHttpResponse</span> <span class="variable">response</span> <span class="operator">=</span> httpClient.execute(httpPost);</span><br><span class="line"></span><br><span class="line">            <span class="type">String</span> <span class="variable">bodyAsString</span> <span class="operator">=</span> EntityUtils.toString(response.getEntity());</span><br><span class="line">            System.out.println(bodyAsString);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="支付请求"><a href="#支付请求" class="headerlink" title="支付请求"></a>支付请求</h3><ul>
+<li>该请求方式参照文章开头提供的SDK开发工具包中的请求方式</li>
+<li>不同的产品应参考 <a target="_blank" rel="noopener" href="https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_4_1.shtml">API字典</a> 请求不同的地址，此处以<code>Native支付</code>为例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PrivateKey</span> <span class="variable">key</span> <span class="operator">=</span> PemUtil.loadPrivateKey(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(WeChartUtil.MERCHANT_PRIVATEKEY.getBytes(StandardCharsets.UTF_8)));</span><br><span class="line"><span class="comment">// 使用定时更新的签名验证器，不需要传入证书</span></span><br><span class="line"><span class="type">ScheduledUpdateCertificatesVerifier</span> <span class="variable">verifier</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScheduledUpdateCertificatesVerifier</span>(</span><br><span class="line">		<span class="keyword">new</span> <span class="title class_">WechatPay2Credentials</span>(WeChartUtil.MERCHANT_ID, <span class="keyword">new</span> <span class="title class_">PrivateKeySigner</span>(WeChartUtil.MERCHANT_SERIAL_NUMBER, key)),</span><br><span class="line">		WeChartUtil.AIV3KEY.getBytes(StandardCharsets.UTF_8));</span><br><span class="line"></span><br><span class="line"><span class="type">WechatPayHttpClientBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> WechatPayHttpClientBuilder.create()</span><br><span class="line">		.withMerchant(WeChartUtil.MERCHANT_ID, WeChartUtil.MERCHANT_SERIAL_NUMBER, key)</span><br><span class="line">		.withValidator(<span class="keyword">new</span> <span class="title class_">WechatPay2Validator</span>(verifier));</span><br><span class="line"><span class="comment">// 通过WechatPayHttpClientBuilder构造的HttpClient，会自动的处理签名和验签，并进行证书自动更新</span></span><br><span class="line"><span class="type">CloseableHttpClient</span> <span class="variable">httpClient</span> <span class="operator">=</span> builder.build();</span><br><span class="line"></span><br><span class="line"><span class="type">HttpPost</span> <span class="variable">httpPost</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpPost</span>(<span class="string">&quot;https://api.mch.weixin.qq.com/v3/pay/transactions/native&quot;</span>);</span><br><span class="line">httpPost.addHeader(<span class="string">&quot;Accept&quot;</span>, <span class="string">&quot;application/json&quot;</span>);</span><br><span class="line">httpPost.addHeader(<span class="string">&quot;Content-type&quot;</span>,<span class="string">&quot;application/json; charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line"><span class="type">ObjectMapper</span> <span class="variable">objectMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>();</span><br><span class="line"><span class="comment">// 生成订单号</span></span><br><span class="line"><span class="type">String</span> <span class="variable">outTradeNo</span> <span class="operator">=</span> WeChartUtil.orderNo();</span><br><span class="line"><span class="comment">// 请求参数</span></span><br><span class="line"><span class="type">ObjectNode</span> <span class="variable">rootNode</span> <span class="operator">=</span> objectMapper.createObjectNode();</span><br><span class="line">rootNode.put(<span class="string">&quot;mchid&quot;</span>,WeChartUtil.MERCHANT_ID)</span><br><span class="line">		.put(<span class="string">&quot;appid&quot;</span>, WeChartUtil.APP_ID)</span><br><span class="line">		.put(<span class="string">&quot;notify_url&quot;</span>, WeChartUtil.NOTIFY_URL)</span><br><span class="line">		.put(<span class="string">&quot;out_trade_no&quot;</span>, outTradeNo)</span><br><span class="line">		.put(<span class="string">&quot;time_expire&quot;</span>, WeChartUtil.timeExpire())</span><br><span class="line">		.put(<span class="string">&quot;description&quot;</span>, description); <span class="comment">// 订单描述（前端获取）</span></span><br><span class="line">rootNode.putObject(<span class="string">&quot;amount&quot;</span>)</span><br><span class="line">		.put(<span class="string">&quot;total&quot;</span>, <span class="number">1</span>); <span class="comment">// 此处支付金额单位为分</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	objectMapper.writeValue(bos, rootNode);</span><br><span class="line">	httpPost.setEntity(<span class="keyword">new</span> <span class="title class_">StringEntity</span>(bos.toString(<span class="string">&quot;UTF-8&quot;</span>), <span class="string">&quot;UTF-8&quot;</span>));</span><br><span class="line">	<span class="type">CloseableHttpResponse</span> <span class="variable">response</span> <span class="operator">=</span> httpClient.execute(httpPost);</span><br><span class="line">	<span class="type">String</span> <span class="variable">bodyAsString</span> <span class="operator">=</span> EntityUtils.toString(response.getEntity());</span><br><span class="line">	<span class="comment">// 这里就是请求支付后返回的数据了</span></span><br><span class="line">	<span class="type">JSONObject</span> <span class="variable">details</span> <span class="operator">=</span> JSONObject.parseObject(bodyAsString);</span><br><span class="line">	<span class="comment">// 支付二维码</span></span><br><span class="line">	String qrCode= details.getString(<span class="string">&quot;code_url&quot;</span>);</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment"> 	* 此处可进行订单数据持久化等业务操作</span></span><br><span class="line"><span class="comment"> 	* ...</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">	e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="回调接口"><a href="#回调接口" class="headerlink" title="回调接口"></a><a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%9B%9E%E8%B0%83&spm=1001.2101.3001.7020">回调</a>接口</h3><ul>
+<li><p>这里就是v3支付和v2支付一个比较明显的区别点，<strong>v2支付的回调地址是在官方网站中配置的，而v3支付中，回调地址是作为请求参数传递到微信的</strong>。</p>
+</li>
+<li><p>此接口地址对应支付请求时的请求参数<code>notify_url</code>，具体功能介绍在此不做阐述</p>
+<p><img src="http://qn.mfei.fun/img/%60N%60T~F0RUGXLA[VRCG[72%Y.png" alt="img"></p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Map <span class="title function_">wxCallback</span><span class="params">(HttpServletRequest request)</span> &#123;</span><br><span class="line">		<span class="type">Map</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">		result.put(<span class="string">&quot;code&quot;</span>, <span class="string">&quot;FAIL&quot;</span>);</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="type">StringBuilder</span> <span class="variable">signStr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">			signStr.append(request.getHeader(<span class="string">&quot;Wechatpay-Timestamp&quot;</span>)).append(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">			signStr.append(request.getHeader(<span class="string">&quot;Wechatpay-Nonce&quot;</span>)).append(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">			<span class="type">BufferedReader</span> <span class="variable">br</span> <span class="operator">=</span> request.getReader();</span><br><span class="line">			<span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">			<span class="type">StringBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">			<span class="keyword">while</span> ((str = br.readLine()) != <span class="literal">null</span>)&#123;</span><br><span class="line">				builder.append(str);</span><br><span class="line">			&#125;</span><br><span class="line">			signStr.append(builder.toString()).append(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">			<span class="comment">// 验证签名</span></span><br><span class="line">			<span class="keyword">if</span> (!WeChartUtil.signVerify(request.getHeader(<span class="string">&quot;Wechatpay-Serial&quot;</span>), signStr.toString(), request.getHeader(<span class="string">&quot;Wechatpay-Signature&quot;</span>)))&#123;</span><br><span class="line">				result.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;sign error&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> result;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// 解密密文</span></span><br><span class="line">			<span class="type">String</span> <span class="variable">decryptOrder</span> <span class="operator">=</span> WeChartUtil.decryptOrder(builder.toString());</span><br><span class="line">			<span class="comment">// 验证订单</span></span><br><span class="line">			<span class="type">JSONObject</span> <span class="variable">details</span> <span class="operator">=</span> JSONObject.parseObject(decryptOrder);</span><br><span class="line">			<span class="comment">// 获取订单状态</span></span><br><span class="line">			<span class="type">String</span> <span class="variable">ciphertext</span> <span class="operator">=</span> details.getString(<span class="string">&quot;trade_state&quot;</span>);</span><br><span class="line">			<span class="keyword">if</span> (<span class="string">&quot;SUCCESS&quot;</span>.equals(ciphertext))&#123;</span><br><span class="line">				<span class="comment">/**</span></span><br><span class="line"><span class="comment">		 		* 此处可进行订单状态数据持久化等业务操作</span></span><br><span class="line"><span class="comment">		 		* ...</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				result.put(<span class="string">&quot;code&quot;</span>, <span class="string">&quot;SUCCESS&quot;</span>);</span><br><span class="line">				result.put(<span class="string">&quot;message&quot;</span>, <span class="string">&quot;成功&quot;</span>);</span><br><span class="line">				<span class="comment">// 关闭订单</span></span><br><span class="line">				WeChartUtil.closeOrder(details.getString(<span class="string">&quot;out_trade_no&quot;</span>));</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">			<span class="comment">//强制手动事务回滚</span></span><br><span class="line">			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://spencedou.github.io/2022/09/20/%E5%BE%AE%E4%BF%A1%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BE%AE%E4%BF%A1/" rel="tag">微信</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%94%AF%E4%BB%98/" rel="tag">支付</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/2022/09/20/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%E5%AE%9E%E7%8E%B0/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            支付宝扫码支付实现
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">状态模式</div>
+      </a>
+    
+  </nav>
+
+   
+<!-- valine评论 -->
+<div id="vcomments-box">
+  <div id="vcomments"></div>
+</div>
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="https://cdn.staticfile.org/valine/1.4.16/Valine.min.js"></script>
+<script>
+  new Valine({
+    el: "#vcomments",
+    app_id: "7GFckYZCaRZQVszep3Qqn24L-gzGzoHsz",
+    app_key: "HPwxuUIlw4S7nh4rvZy187yU",
+    path: window.location.pathname,
+    avatar: "monsterid",
+    placeholder: "给我的文章加点评论吧~",
+    recordIP: true,
+  });
+  const infoEle = document.querySelector("#vcomments .info");
+  if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0) {
+    infoEle.childNodes.forEach(function (item) {
+      item.parentNode.removeChild(item);
+    });
+  }
+</script>
+<style>
+  #vcomments-box {
+    padding: 5px 30px;
+  }
+
+  @media screen and (max-width: 800px) {
+    #vcomments-box {
+      padding: 5px 0px;
+    }
+  }
+
+  #vcomments-box #vcomments {
+    background-color: #fff;
+  }
+
+  .v .vlist .vcard .vh {
+    padding-right: 20px;
+  }
+
+  .v .vlist .vcard {
+    padding-left: 10px;
+  }
+</style>
+
+ 
+   
+  
+   
+    <script src="https://cdn.staticfile.org/twikoo/1.4.18/twikoo.all.min.js"></script>
+    <div id="twikoo" class="twikoo"></div>
+    <script>
+        twikoo.init({
+            envId: ""
+        })
+    </script>
+ 
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2019-2022
+        <i class="ri-heart-fill heart_icon"></i> SpenceDou
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+        
+        <span>
+  <span><i class="ri-user-3-fill"></i>访问人数:<span id="busuanzi_value_site_uv"></span></span>
+  <span class="division">|</span>
+  <span><i class="ri-eye-fill"></i>浏览次数:<span id="busuanzi_value_page_pv"></span></span>
+</span>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+        <script type="text/javascript" src='https://s9.cnzz.com/z_stat.php?id=1278069914&amp;web_id=1278069914'></script>
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+<div class="todark" id="todark">
+  <i class="ri-moon-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/ayer-side.svg" alt="风大，进来说"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/2019/about">关于我</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>请我喝杯咖啡吧~</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="/images/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="https://cdn.staticfile.org/jquery-modal/0.9.2/jquery.modal.min.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.staticfile.org/jquery-modal/0.9.2/jquery.modal.min.css"
+/>
+<script src="https://cdn.staticfile.org/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" style="display:none" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/photoswipe/4.1.3/photoswipe.min.css">
+<link rel="stylesheet" href="https://cdn.staticfile.org/photoswipe/4.1.3/default-skin/default-skin.min.css">
+<script src="https://cdn.staticfile.org/photoswipe/4.1.3/photoswipe.min.js"></script>
+<script src="https://cdn.staticfile.org/photoswipe/4.1.3/photoswipe-ui-default.min.js"></script>
+
+<script>
+    function viewer_init() {
+        let pswpElement = document.querySelectorAll('.pswp')[0];
+        let $imgArr = document.querySelectorAll(('.article-entry img:not(.reward-img)'))
+
+        $imgArr.forEach(($em, i) => {
+            $em.onclick = () => {
+                // slider展开状态
+                // todo: 这样不好，后面改成状态
+                if (document.querySelector('.left-col.show')) return
+                let items = []
+                $imgArr.forEach(($em2, i2) => {
+                    let img = $em2.getAttribute('data-idx', i2)
+                    let src = $em2.getAttribute('data-target') || $em2.getAttribute('src')
+                    let title = $em2.getAttribute('alt')
+                    // 获得原图尺寸
+                    const image = new Image()
+                    image.src = src
+                    items.push({
+                        src: src,
+                        w: image.width || $em2.width,
+                        h: image.height || $em2.height,
+                        title: title
+                    })
+                })
+                var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+                    index: parseInt(i)
+                });
+                gallery.init()
+            }
+        })
+    }
+    viewer_init()
+</script> 
+<!-- MathJax -->
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+ 
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+ 
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+ 
+<script src="/js/clickBoom2.js"></script>
+ 
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="https://cdn.staticfile.org/clipboard.js/2.0.10/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-checkbox-circle-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-checkbox-circle-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-time-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-time-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+ 
+<script src="/js/dz.js"></script>
+ 
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "forest" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
