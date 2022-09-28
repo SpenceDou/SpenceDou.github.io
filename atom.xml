@@ -6,7 +6,7 @@
   <link href="https://spencedou.github.io/atom.xml" rel="self"/>
   
   <link href="https://spencedou.github.io/"/>
-  <updated>2022-09-20T06:54:05.097Z</updated>
+  <updated>2022-09-28T02:53:22.548Z</updated>
   <id>https://spencedou.github.io/</id>
   
   <author>
@@ -15,6 +15,53 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>众包平台设计</title>
+    <link href="https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/"/>
+    <id>https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</id>
+    <published>2022-09-28T02:52:28.000Z</published>
+    <updated>2022-09-28T02:53:22.548Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h2 id="数据是如何清洗的"><a href="#数据是如何清洗的" class="headerlink" title="数据是如何清洗的"></a>数据是如何清洗的</h2><p>在进行数据标注之前，我们首先要对数据进行清洗，得到符合我们要求的数据。数据的清洗包括去除无效的数据、整理成规整的格式等等。具体的数据要求可以和算法人员确认。</p><h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h2 id="标注任务是如何分配的"><a href="#标注任务是如何分配的" class="headerlink" title="标注任务是如何分配的"></a>标注任务是如何分配的</h2><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;数据是如何管理的&quot;&gt;&lt;a href=&quot;#数据是如何管理的&quot; class=&quot;headerlink&quot; title=&quot;数据是如何管理的&quot;&gt;&lt;/a&gt;数据是如何管理的&lt;/h2&gt;&lt;h2 id=&quot;数据是如何清洗的&quot;&gt;&lt;a href=&quot;#数据是如何清洗的&quot; class=&quot;head</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>浅聊数据众包</title>
+    <link href="https://spencedou.github.io/2022/09/27/%E6%B5%85%E8%81%8A%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/"/>
+    <id>https://spencedou.github.io/2022/09/27/%E6%B5%85%E8%81%8A%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/</id>
+    <published>2022-09-27T13:18:53.000Z</published>
+    <updated>2022-09-28T02:53:49.128Z</updated>
+    
+    <content type="html"><![CDATA[<p>首先数据众包实际是一个组合概念——<span style="color:red">数据众包&#x3D;数据集+众包</span></p><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><p><strong>数据集：</strong><span style="color:red">数据组成的集合</span>，或者说是一组样本的集合</p><p><strong>样本：</strong>数据集的一行，一个样本包含一个或多个<code>特征</code>，此外还可能包含一个<code>标签</code></p><p><strong>标准数据集：</strong>符合一定规范要求的数据集</p><p><strong>标签：</strong>在监督式学习中，标签指样本的<code>答案</code>或<code>结果</code>部分</p><p><strong>特征：</strong>在进行<code>预测</code>时使用的<code>输入变量</code></p><p><strong>预测：</strong>模型在收到输入样本后的<code>输出</code></p><p><span style="color:red">数据集存在意义：</span></p><ul><li>计算机不擅长理解语言本身。规范化的输入便于学习到规律。</li><li>现实中数据是散落的、不均衡的。数据集中可以对数据更高效的处理。</li><li>人去量化计算机学习的效果很难。数据集便于在一定范围内评估机器学习的效果。</li></ul><h3 id="数据标注"><a href="#数据标注" class="headerlink" title="数据标注"></a>数据标注</h3><p>机器学习可分为<span style="color:red">有监督学习</span>和<span style="color:red">无监督学习</span>。无监督学习效果是不可控的，常被用来做探索性实验，在实际产品应用中多是使用有监督学习的。<code>有监督的学习就需要有标注的数据作为先验经验来引导学习</code>。</p><p>数据标注有许多类型，如分类、画框、注释、标记等等。机器学习的过程很大程度上类似于人类认知的过程，恰如你第一次见到苹果，你不知道它是苹果，是你的妈妈告诉你那是一个苹果，在多次的学习后你对苹果就有了自己的认知。同样的，在机器学习的过程中，要想训练其对苹果的识别能力，我们需要向其提供苹果的照片，但此时没人告诉它那是苹果。所以如何向人工智能提供学习教材？首先我们要有苹果的照片，其次要作出标识表名这是苹果，然后机器在学习了大量苹果标识的图片后就对苹果有了认知。在机器学习的过程中，主要分为两个阶段——训练、测试。这两个阶段所使用的数据集都是标注过的具有共同特征或标签的数据。当我们有1000张标注为苹果的照片时，可以取900张作为<code>训练集</code>，100张作为<code>测试集</code>，在对900张训练集数据完成了学习后，将剩下的100张测试集数据用以测试模型的准确率。</p><h3 id="训练次数越多越好吗"><a href="#训练次数越多越好吗" class="headerlink" title="训练次数越多越好吗"></a>训练次数越多越好吗</h3><p><span style="color:red">过拟合、欠拟合这两种情况均是诸多因素造成，此处并不详细解释，仅仅介绍这两个概念</span></p><p><strong>过拟合：</strong></p><p>机器把训练样本学的“太好”了，很可能已经把训练样本自身的一些特点作为所有潜在样本都会具有的一般性质，如此泛化能力降低，此现象就是过拟合。如此，就会造成在训练集上表现效果良好，而在测试集上效果差。</p><p><strong>欠拟合：</strong></p><p>欠拟合是指对训练集数据的一般性质尚未学好。在训练集及测试集上的表现都不好。</p><h3 id="众包"><a href="#众包" class="headerlink" title="众包"></a>众包</h3><p><strong>众包：</strong>参与者一般是单独承担订单任务的，本着自由自愿包揽任务，由参与者自身对订单负责</p><p><strong>外包：</strong>参与者聚集在集体或者组织，被动的分配任务执行任务，由组织对订单负责</p><p><strong>威客：</strong>低端任务悬赏（众包）、高端任务招标（外包）</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;首先数据众包实际是一个组合概念——&lt;span style=&quot;color:red&quot;&gt;数据众包&amp;#x3D;数据集+众包&lt;/span&gt;&lt;/p&gt;
+&lt;h3 id=&quot;数据集&quot;&gt;&lt;a href=&quot;#数据集&quot; class=&quot;headerlink&quot; title=&quot;数据集&quot;&gt;&lt;/a&gt;数据集&lt;/</summary>
+      
+    
+    
+    
+    <category term="项目" scheme="https://spencedou.github.io/categories/%E9%A1%B9%E7%9B%AE/"/>
+    
+    
+    <category term="大数据实训平台" scheme="https://spencedou.github.io/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%9E%E8%AE%AD%E5%B9%B3%E5%8F%B0/"/>
+    
+    <category term="数据集" scheme="https://spencedou.github.io/tags/%E6%95%B0%E6%8D%AE%E9%9B%86/"/>
+    
+  </entry>
   
   <entry>
     <title>支付宝扫码支付实现</title>
