@@ -78,13 +78,17 @@
     <div class="article-meta">
       <a href="/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/" class="article-date">
   <time datetime="2022-09-28T02:52:28.000Z" itemprop="datePublished">2022-09-28</time>
-</a>   
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E9%A1%B9%E7%9B%AE/">项目</a>
+  </div>
+  
 <div class="word_count">
     <span class="post-time">
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">127</span>
+            <span class="post-count">1k</span>
         </span>
     </span>
 
@@ -93,7 +97,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">1 分钟</span>
+            <span class="post-count">3 分钟</span>
         </span>
     </span>
 </div>
@@ -108,8 +112,50 @@
   
     <div class="article-entry" itemprop="articleBody">
        
-  <h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h2 id="数据是如何清洗的"><a href="#数据是如何清洗的" class="headerlink" title="数据是如何清洗的"></a>数据是如何清洗的</h2><p>在进行数据标注之前，我们首先要对数据进行清洗，得到符合我们要求的数据。数据的清洗包括去除无效的数据、整理成规整的格式等等。具体的数据要求可以和算法人员确认。</p>
-<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h2 id="标注任务是如何分配的"><a href="#标注任务是如何分配的" class="headerlink" title="标注任务是如何分配的"></a>标注任务是如何分配的</h2><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2> 
+  <h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p>
+<p>线上获取：直接访问受信任的三方或私人数据集</p>
+<h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p>
+<p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p>
+<p><strong>LeoFS：</strong>不是很可控，可控性差</p>
+<p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p>
+<p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p>
+<p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p>
+<p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p>
+<p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p>
+<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p>
+<h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p>
+<p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p>
+<p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p>
+<p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p>
+<p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p>
+<p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p>
+<h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><p><span style="color:red"><strong>标注要求：</strong></span></p>
+<p>- </p>
+<h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul>
+<li><p>数据集的标注信息是保存在mysql当中的。</p>
+<ul>
+<li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li>
+<li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li>
+</ul>
+</li>
+<li><p>具体的数据集所对应的标注信息是在下载时生成的。</p>
+<ul>
+<li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li>
+<li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li>
+<li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li>
+<li>下载时生成保证了标注信息的准确性和实时性</li>
+</ul>
+</li>
+<li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p>
+<ul>
+<li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li>
+</ul>
+</li>
+<li><p>频繁请求标注信息下载怎么办</p>
+</li>
+</ul>
+<h3 id="组织方式"><a href="#组织方式" class="headerlink" title="组织方式"></a>组织方式</h3><p>- </p>
+<h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><h3 id="分享数据集"><a href="#分享数据集" class="headerlink" title="分享数据集"></a>分享数据集</h3><h3 id="下载数据集"><a href="#下载数据集" class="headerlink" title="下载数据集"></a>下载数据集</h3><h3 id="引用数据集"><a href="#引用数据集" class="headerlink" title="引用数据集"></a>引用数据集</h3> 
       <!-- reward -->
       
       <div id="reword-out">
@@ -184,11 +230,22 @@
 </div>
 
 <div id="share-mask"></div>  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%9E%E8%AE%AD%E5%B9%B3%E5%8F%B0/" rel="tag">大数据实训平台</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/" rel="tag">数据众包</a></li></ul>
+
     </footer>
   </div>
 
    
   <nav class="article-nav">
+    
+      <a href="/2022/09/29/Minio%E7%AE%80%E4%BB%8B/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Minio简介
+          
+        </div>
+      </a>
     
     
       <a href="/2022/09/27/%E6%B5%85%E8%81%8A%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/" class="article-nav-link">

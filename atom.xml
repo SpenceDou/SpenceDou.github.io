@@ -6,7 +6,7 @@
   <link href="https://spencedou.github.io/atom.xml" rel="self"/>
   
   <link href="https://spencedou.github.io/"/>
-  <updated>2022-09-28T02:53:22.548Z</updated>
+  <updated>2022-09-29T01:25:15.959Z</updated>
   <id>https://spencedou.github.io/</id>
   
   <author>
@@ -17,18 +17,18 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>众包平台设计</title>
-    <link href="https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/"/>
-    <id>https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</id>
-    <published>2022-09-28T02:52:28.000Z</published>
-    <updated>2022-09-28T02:53:22.548Z</updated>
+    <title>Minio简介</title>
+    <link href="https://spencedou.github.io/2022/09/29/Minio%E7%AE%80%E4%BB%8B/"/>
+    <id>https://spencedou.github.io/2022/09/29/Minio%E7%AE%80%E4%BB%8B/</id>
+    <published>2022-09-29T00:51:48.000Z</published>
+    <updated>2022-09-29T01:25:15.959Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h2 id="数据是如何清洗的"><a href="#数据是如何清洗的" class="headerlink" title="数据是如何清洗的"></a>数据是如何清洗的</h2><p>在进行数据标注之前，我们首先要对数据进行清洗，得到符合我们要求的数据。数据的清洗包括去除无效的数据、整理成规整的格式等等。具体的数据要求可以和算法人员确认。</p><h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h2 id="标注任务是如何分配的"><a href="#标注任务是如何分配的" class="headerlink" title="标注任务是如何分配的"></a>标注任务是如何分配的</h2><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2>]]></content>
+    <content type="html"><![CDATA[<h3 id="MinIO"><a href="#MinIO" class="headerlink" title="MinIO"></a>MinIO</h3><p>Minio使用纠删码erasure code和校验和checksum。 即便丢失一半数量（N&#x2F;2）的硬盘，仍然可以恢复数据。</p><p>Minio 是个基于 Golang 编写的开源对象存储套件，虽然轻量，却拥有着不错的性能</p><h3 id="数据传输方式"><a href="#数据传输方式" class="headerlink" title="数据传输方式"></a><span style="color:green">数据传输方式</span></h3><p>Minio 是一个基于Apache License v2.0开源协议的对象存储服务。它兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器&#x2F;虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p><h3 id="大文件传输方式"><a href="#大文件传输方式" class="headerlink" title="大文件传输方式"></a>大文件传输方式</h3><p>分片上传</p><h3 id="文件修复方案"><a href="#文件修复方案" class="headerlink" title="文件修复方案"></a>文件修复方案</h3><p>MinIO 使用 <strong>纠删码和校验和 机制来保证高可靠性，即便丢失一半数量 (N&#x2F;2)的硬盘，仍然可以恢复数据</strong>。 纠删码是一种恢复丢失和损坏数据的数学算法， MinIO 采用 Reed-Solomon code 将对象拆分成 N&#x2F;2 数据和 N&#x2F;2 奇偶校验块。</p><h3 id="分布式部署"><a href="#分布式部署" class="headerlink" title="分布式部署"></a>分布式部署</h3><p><span style="color:red"><strong>单主机单硬盘</strong></span></p><p><span style="color:red"><strong>单主机多硬盘</strong></span></p><p><span style="color:red"><strong>多主机多硬盘</strong></span></p>]]></content>
     
     
       
       
-    <summary type="html">&lt;h2 id=&quot;数据是如何管理的&quot;&gt;&lt;a href=&quot;#数据是如何管理的&quot; class=&quot;headerlink&quot; title=&quot;数据是如何管理的&quot;&gt;&lt;/a&gt;数据是如何管理的&lt;/h2&gt;&lt;h2 id=&quot;数据是如何清洗的&quot;&gt;&lt;a href=&quot;#数据是如何清洗的&quot; class=&quot;head</summary>
+    <summary type="html">&lt;h3 id=&quot;MinIO&quot;&gt;&lt;a href=&quot;#MinIO&quot; class=&quot;headerlink&quot; title=&quot;MinIO&quot;&gt;&lt;/a&gt;MinIO&lt;/h3&gt;&lt;p&gt;Minio使用纠删码erasure code和校验和checksum。 即便丢失一半数量（N&amp;#x2F;2）的硬盘，</summary>
       
     
     
@@ -37,11 +37,37 @@
   </entry>
   
   <entry>
+    <title>众包平台设计</title>
+    <link href="https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/"/>
+    <id>https://spencedou.github.io/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</id>
+    <published>2022-09-28T02:52:28.000Z</published>
+    <updated>2022-09-29T09:03:57.230Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p><p>线上获取：直接访问受信任的三方或私人数据集</p><h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p><p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p><p><strong>LeoFS：</strong>不是很可控，可控性差</p><p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p><p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p><p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p><p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p><p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p><h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p><h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p><p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p><p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p><p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p><p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p><p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p><h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><p><span style="color:red"><strong>标注要求：</strong></span></p><p>- </p><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul><li><p>数据集的标注信息是保存在mysql当中的。</p><ul><li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li><li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li></ul></li><li><p>具体的数据集所对应的标注信息是在下载时生成的。</p><ul><li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li><li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li><li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li><li>下载时生成保证了标注信息的准确性和实时性</li></ul></li><li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p><ul><li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li></ul></li><li><p>频繁请求标注信息下载怎么办</p></li></ul><h3 id="组织方式"><a href="#组织方式" class="headerlink" title="组织方式"></a>组织方式</h3><p>- </p><h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><h3 id="分享数据集"><a href="#分享数据集" class="headerlink" title="分享数据集"></a>分享数据集</h3><h3 id="下载数据集"><a href="#下载数据集" class="headerlink" title="下载数据集"></a>下载数据集</h3><h3 id="引用数据集"><a href="#引用数据集" class="headerlink" title="引用数据集"></a>引用数据集</h3>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;数据是如何管理的&quot;&gt;&lt;a href=&quot;#数据是如何管理的&quot; class=&quot;headerlink&quot; title=&quot;数据是如何管理的&quot;&gt;&lt;/a&gt;数据是如何管理的&lt;/h2&gt;&lt;h3 id=&quot;数据获取途径&quot;&gt;&lt;a href=&quot;#数据获取途径&quot; class=&quot;headerli</summary>
+      
+    
+    
+    
+    <category term="项目" scheme="https://spencedou.github.io/categories/%E9%A1%B9%E7%9B%AE/"/>
+    
+    
+    <category term="大数据实训平台" scheme="https://spencedou.github.io/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%9E%E8%AE%AD%E5%B9%B3%E5%8F%B0/"/>
+    
+    <category term="数据众包" scheme="https://spencedou.github.io/tags/%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/"/>
+    
+  </entry>
+  
+  <entry>
     <title>浅聊数据众包</title>
     <link href="https://spencedou.github.io/2022/09/27/%E6%B5%85%E8%81%8A%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/"/>
     <id>https://spencedou.github.io/2022/09/27/%E6%B5%85%E8%81%8A%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/</id>
     <published>2022-09-27T13:18:53.000Z</published>
-    <updated>2022-09-28T02:53:49.128Z</updated>
+    <updated>2022-09-28T03:08:57.783Z</updated>
     
     <content type="html"><![CDATA[<p>首先数据众包实际是一个组合概念——<span style="color:red">数据众包&#x3D;数据集+众包</span></p><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><p><strong>数据集：</strong><span style="color:red">数据组成的集合</span>，或者说是一组样本的集合</p><p><strong>样本：</strong>数据集的一行，一个样本包含一个或多个<code>特征</code>，此外还可能包含一个<code>标签</code></p><p><strong>标准数据集：</strong>符合一定规范要求的数据集</p><p><strong>标签：</strong>在监督式学习中，标签指样本的<code>答案</code>或<code>结果</code>部分</p><p><strong>特征：</strong>在进行<code>预测</code>时使用的<code>输入变量</code></p><p><strong>预测：</strong>模型在收到输入样本后的<code>输出</code></p><p><span style="color:red">数据集存在意义：</span></p><ul><li>计算机不擅长理解语言本身。规范化的输入便于学习到规律。</li><li>现实中数据是散落的、不均衡的。数据集中可以对数据更高效的处理。</li><li>人去量化计算机学习的效果很难。数据集便于在一定范围内评估机器学习的效果。</li></ul><h3 id="数据标注"><a href="#数据标注" class="headerlink" title="数据标注"></a>数据标注</h3><p>机器学习可分为<span style="color:red">有监督学习</span>和<span style="color:red">无监督学习</span>。无监督学习效果是不可控的，常被用来做探索性实验，在实际产品应用中多是使用有监督学习的。<code>有监督的学习就需要有标注的数据作为先验经验来引导学习</code>。</p><p>数据标注有许多类型，如分类、画框、注释、标记等等。机器学习的过程很大程度上类似于人类认知的过程，恰如你第一次见到苹果，你不知道它是苹果，是你的妈妈告诉你那是一个苹果，在多次的学习后你对苹果就有了自己的认知。同样的，在机器学习的过程中，要想训练其对苹果的识别能力，我们需要向其提供苹果的照片，但此时没人告诉它那是苹果。所以如何向人工智能提供学习教材？首先我们要有苹果的照片，其次要作出标识表名这是苹果，然后机器在学习了大量苹果标识的图片后就对苹果有了认知。在机器学习的过程中，主要分为两个阶段——训练、测试。这两个阶段所使用的数据集都是标注过的具有共同特征或标签的数据。当我们有1000张标注为苹果的照片时，可以取900张作为<code>训练集</code>，100张作为<code>测试集</code>，在对900张训练集数据完成了学习后，将剩下的100张测试集数据用以测试模型的准确率。</p><h3 id="训练次数越多越好吗"><a href="#训练次数越多越好吗" class="headerlink" title="训练次数越多越好吗"></a>训练次数越多越好吗</h3><p><span style="color:red">过拟合、欠拟合这两种情况均是诸多因素造成，此处并不详细解释，仅仅介绍这两个概念</span></p><p><strong>过拟合：</strong></p><p>机器把训练样本学的“太好”了，很可能已经把训练样本自身的一些特点作为所有潜在样本都会具有的一般性质，如此泛化能力降低，此现象就是过拟合。如此，就会造成在训练集上表现效果良好，而在测试集上效果差。</p><p><strong>欠拟合：</strong></p><p>欠拟合是指对训练集数据的一般性质尚未学好。在训练集及测试集上的表现都不好。</p><h3 id="众包"><a href="#众包" class="headerlink" title="众包"></a>众包</h3><p><strong>众包：</strong>参与者一般是单独承担订单任务的，本着自由自愿包揽任务，由参与者自身对订单负责</p><p><strong>外包：</strong>参与者聚集在集体或者组织，被动的分配任务执行任务，由组织对订单负责</p><p><strong>威客：</strong>低端任务悬赏（众包）、高端任务招标（外包）</p>]]></content>
     
@@ -59,7 +85,7 @@
     
     <category term="大数据实训平台" scheme="https://spencedou.github.io/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AE%9E%E8%AE%AD%E5%B9%B3%E5%8F%B0/"/>
     
-    <category term="数据集" scheme="https://spencedou.github.io/tags/%E6%95%B0%E6%8D%AE%E9%9B%86/"/>
+    <category term="数据众包" scheme="https://spencedou.github.io/tags/%E6%95%B0%E6%8D%AE%E4%BC%97%E5%8C%85/"/>
     
   </entry>
   
