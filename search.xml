@@ -1,6 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Docker运行Nginx容器</title>
+    <url>/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/</url>
+    <content><![CDATA[<p><strong>整体步骤：</strong></p>
+<ol>
+<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
+<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
+<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
+</ol>
+<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
+<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
+<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
+<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
+</ul>
+<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
+<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
+<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
+</li>
+<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
+<blockquote>
+<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
+<blockquote>
+<p>解释：</p>
+<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
+<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
+<p><code>-d</code>，表示后台运行该容器。</p>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
+<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
+<blockquote>
+<ol>
+<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
+<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
+<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
+</li>
+<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
+</li>
+<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
+</li>
+</ul>
+<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
+<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
+<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
+</ul>
+<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>nginx</tag>
+        <tag>服务器</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>JavaWeb——Servlet</title>
     <url>/2020/10/09/JavaWeb%E2%80%94%E2%80%94Servlet/</url>
     <content><![CDATA[<h2 id="Servlet简介"><a href="#Servlet简介" class="headerlink" title="Servlet简介"></a>Servlet简介</h2><p><span style="color:red">Servlet通常指的就是实现Servlet接口的java类，通过对http请求进行处理并响应结果，用以开发动态web。</span></p>
@@ -84,135 +146,6 @@
       </categories>
       <tags>
         <tag>JavaWeb</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Docker运行Nginx容器</title>
-    <url>/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/</url>
-    <content><![CDATA[<p><strong>整体步骤：</strong></p>
-<ol>
-<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
-<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
-<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
-</ol>
-<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
-<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
-<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
-<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
-</ul>
-<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
-<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
-<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
-</li>
-<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
-<blockquote>
-<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
-<blockquote>
-<p>解释：</p>
-<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
-<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
-<p><code>-d</code>，表示后台运行该容器。</p>
-</blockquote>
-</blockquote>
-</li>
-</ul>
-<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
-<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
-<blockquote>
-<ol>
-<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
-<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
-<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
-</ol>
-</blockquote>
-</li>
-<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
-</li>
-<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
-</li>
-<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
-</li>
-</ul>
-<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
-<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
-<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
-</ul>
-<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>nginx</tag>
-        <tag>服务器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx配置信息</title>
-    <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
-    <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
-<h2 id="nginx-conf文件"><a href="#nginx-conf文件" class="headerlink" title="nginx.conf文件"></a><a href="https://so.csdn.net/so/search?q=nginx&spm=1001.2101.3001.7020">nginx</a>.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">user  nginx;</span><br><span class="line">worker_processes  auto;</span><br><span class="line"></span><br><span class="line">error_log  /var/log/nginx/error.log notice;</span><br><span class="line">pid        /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>从这个配置文件看得出以下信息：</p>
-<ul>
-<li>日志位置：&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log</li>
-<li>最大连接数（默认）：1024</li>
-<li><code>文件引入断言：/etc/nginx/conf.d/*.conf</code></li>
-</ul>
-<h2 id="conf-d文件夹"><a href="#conf-d文件夹" class="headerlink" title="conf.d文件夹"></a>conf.d文件夹</h2><ul>
-<li>在该文件夹下有一个<code>default.conf</code>文件为nginx默认配置</li>
-<li>根据<code>nginx.conf</code>文件中的配置断言看得出，自定义配置也应当放在<code>conf.d</code>文件夹中</li>
-</ul>
-<h2 id="default-conf文件"><a href="#default-conf文件" class="headerlink" title="default.conf文件"></a>default.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    listen  [::]:80;</span><br><span class="line">    server_name  localhost;</span><br><span class="line"></span><br><span class="line">    #access_log  /var/log/nginx/host.access.log  main;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #error_page  404              /404.html;</span><br><span class="line"></span><br><span class="line">    # redirect server error pages to the static page /50x.html</span><br><span class="line">    #</span><br><span class="line">    error_page   500 502 503 504  /50x.html;</span><br><span class="line">    location = /index.html &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # proxy the PHP scripts to Apache listening on 127.0.0.1:80</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    proxy_pass   http://127.0.0.1;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    root           html;</span><br><span class="line">    #    fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">    #    fastcgi_index  index.php;</span><br><span class="line">    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;</span><br><span class="line">    #    include        fastcgi_params;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # deny access to .htaccess files, if Apache&#x27;s document root</span><br><span class="line">    # concurs with nginx&#x27;s one</span><br><span class="line">    #</span><br><span class="line">    #location ~ /\.ht &#123;</span><br><span class="line">    #    deny  all;</span><br><span class="line">    #&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>至此结合<code>nginx.conf</code>文件和<code>default.conf</code>文件不难看出nginx的配置结构为以下这种情况：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">#全局块</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">#events块</span><br><span class="line">events &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#http块</span><br><span class="line">http</span><br><span class="line">&#123;</span><br><span class="line">	#http全局块</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    #server块</span><br><span class="line">    server</span><br><span class="line">    &#123; </span><br><span class="line">    	#server全局块</span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">		#location块</span><br><span class="line">        location [PATTERN]</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    #http全局块</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>全局块：配置影响nginx全局的指令。一般有运行nginx服务器的用户组，nginx进程pid存放路径，日志存放路径，配置文件引入，允许生成worker process数等。</li>
-<li>events块：配置影响nginx服务器或与用户的网络连接。有每个进程的最大连接数，选取哪种事件驱动模型处理连接请求，是否允许同时接受多个网路连接，开启多个网络连接序列化等。</li>
-<li>http块：可以嵌套多个server，配置代理，缓存，日志定义等绝大多数功能和第三方模块的配置。如文件引入，mime-type定义，日志自定义，是否使用sendfile传输文件，连接超时时间，单连接请求数等。</li>
-<li>server块：配置虚拟主机的相关参数，一个http中可以有多个server</li>
-<li>location块：配置请求的路由，以及各种页面的处理情况。</li>
-</ul>
-<h2 id="配置server块"><a href="#配置server块" class="headerlink" title="配置server块"></a>配置server块</h2><p>我们在部署项目时最常配置的就是如default.conf文件所示的server块的配置。基本就是<code>监听一个端口</code>，当请求nginx主机ip+端口时自然就进入了监听该端口的server；<code>监听一个地址</code>，该地址为当前server服务所在地址；<code>对请求路由</code>，即对请求的URL进行过滤匹配，访问具体的静态资源或服务。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>路由静态资源</strong><br>当请求静态资源时，路由方式如下（因为nginx首页内容即为前端静态资源，故此出以default.nginx对首页资源的路由举例）：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>路由服务地址</strong><br>当请求后端服务时，路由方式如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">upstream myserver&#123;</span><br><span class="line">    server 172.17.0.4:8000;</span><br><span class="line">    server 172.17.0.5:8000;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /api &#123;</span><br><span class="line">   proxy_pass http://myserver;</span><br><span class="line">   index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="root与alias"><a href="#root与alias" class="headerlink" title="root与alias"></a>root与alias</h2><p><strong>root</strong><br>root是用来指定访问资源的文件路径的，nginx会<code>将root的值和location的值进行拼接</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
-<figure class="highlight plaintext"><figcaption><span>/login/&#123;</span></figcaption><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    root    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>访问结果如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/login/index.html</span><br><span class="line">/login/b --&gt; /usr/local/login/b/index.html</span><br></pre></td></tr></table></figure>
-
-<p><strong>alias</strong><br>alias也是用来指定访问资源的文件路径的，但是nginx会<code>将alias的值替换location的值</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>访问结果如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/index.html</span><br><span class="line">/login/b --&gt; /usr/local/b/index.html</span><br></pre></td></tr></table></figure>
-
-<p>另外：alias指定的是文件夹路径，不能直接指定到具体的文件，否则会500，例如</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local/index.html;</span><br><span class="line">    #index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">这种配置会让nginx报出500</span><br></pre></td></tr></table></figure>
-
-<p>注意：<code>使用alias的时候，url后面如果加了斜杠，则下面的路径必须也加斜杠，否则403</code>。<br><strong>index</strong><br>index就是用来指定具体的资源的名字的，index可以指定多个资源的名字，第一个匹配不到，就会匹配第二个，直到匹配到为止。但是<code>location使用严格匹配的时候（加了个等于号），不能使用index，否则会导致root失效</code>，如：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location =/login/&#123;</span><br><span class="line">    root    /usr/local/;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">当访问的url为/login/时，实际访问的资源为：nginx的默认document_root/login/index.html，使得root失效，值得注意的是nginx的默认document_root和我们root指定的是不一样的，所以最后会404</span><br></pre></td></tr></table></figure>
-
-<p><strong>常见配置</strong></p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">########### 每个指令必须有分号结束。#################</span><br><span class="line">#user administrator administrators;  #配置用户或者组，默认为nobody nobody。</span><br><span class="line">#worker_processes 2;  #允许生成的进程数，默认为1</span><br><span class="line">#pid /nginx/pid/nginx.pid;   #指定nginx进程运行文件存放地址</span><br><span class="line">error_log log/error.log debug;  #制定日志路径，级别。这个设置可以放入全局块，http块，server块，级别以此为：debug|info|notice|warn|error|crit|alert|emerg</span><br><span class="line">events &#123;</span><br><span class="line">    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on</span><br><span class="line">    multi_accept on;  #设置一个进程是否同时接受多个网络连接，默认为off</span><br><span class="line">    #use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport</span><br><span class="line">    worker_connections  1024;    #最大连接数，默认为512</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;   #文件扩展名与文件类型映射表</span><br><span class="line">    default_type  application/octet-stream; #默认文件类型，默认为text/plain</span><br><span class="line">    #access_log off; #取消服务日志    </span><br><span class="line">    log_format myFormat &#x27;$remote_addr–$remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $http_x_forwarded_for&#x27;; #自定义格式</span><br><span class="line">    access_log log/access.log myFormat;  #combined为日志格式的默认值</span><br><span class="line">    sendfile on;   #允许sendfile方式传输文件，默认为off，可以在http块，server块，location块。</span><br><span class="line">    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。</span><br><span class="line">    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。</span><br><span class="line"></span><br><span class="line">    upstream mysvr &#123;   </span><br><span class="line">      server 127.0.0.1:7878;</span><br><span class="line">      server 192.168.10.121:3333 backup;  #热备</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 https://www.baidu.com; #错误页</span><br><span class="line">    server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
@@ -326,7 +259,7 @@
   <entry>
     <title>Minio简介</title>
     <url>/2022/09/29/Minio%E7%AE%80%E4%BB%8B/</url>
-    <content><![CDATA[<h3 id="MinIO"><a href="#MinIO" class="headerlink" title="MinIO"></a>MinIO</h3><p>Minio使用纠删码erasure code和校验和checksum。 即便丢失一半数量（N&#x2F;2）的硬盘，仍然可以恢复数据。</p>
+    <content><![CDATA[<p>Minio使用纠删码erasure code和校验和checksum。 即便丢失一半数量（N&#x2F;2）的硬盘，仍然可以恢复数据。</p>
 <p>Minio 是个基于 Golang 编写的开源对象存储套件，虽然轻量，却拥有着不错的性能</p>
 <h3 id="数据传输方式"><a href="#数据传输方式" class="headerlink" title="数据传输方式"></a><span style="color:green">数据传输方式</span></h3><p>Minio 是一个基于Apache License v2.0开源协议的对象存储服务。它兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器&#x2F;虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p>
 <h3 id="大文件传输方式"><a href="#大文件传输方式" class="headerlink" title="大文件传输方式"></a>大文件传输方式</h3><p>分片上传</p>
@@ -335,6 +268,73 @@
 <p><span style="color:red"><strong>单主机多硬盘</strong></span></p>
 <p><span style="color:red"><strong>多主机多硬盘</strong></span></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Nginx配置信息</title>
+    <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
+    <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
+<h2 id="nginx-conf文件"><a href="#nginx-conf文件" class="headerlink" title="nginx.conf文件"></a><a href="https://so.csdn.net/so/search?q=nginx&spm=1001.2101.3001.7020">nginx</a>.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">user  nginx;</span><br><span class="line">worker_processes  auto;</span><br><span class="line"></span><br><span class="line">error_log  /var/log/nginx/error.log notice;</span><br><span class="line">pid        /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从这个配置文件看得出以下信息：</p>
+<ul>
+<li>日志位置：&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log</li>
+<li>最大连接数（默认）：1024</li>
+<li><code>文件引入断言：/etc/nginx/conf.d/*.conf</code></li>
+</ul>
+<h2 id="conf-d文件夹"><a href="#conf-d文件夹" class="headerlink" title="conf.d文件夹"></a>conf.d文件夹</h2><ul>
+<li>在该文件夹下有一个<code>default.conf</code>文件为nginx默认配置</li>
+<li>根据<code>nginx.conf</code>文件中的配置断言看得出，自定义配置也应当放在<code>conf.d</code>文件夹中</li>
+</ul>
+<h2 id="default-conf文件"><a href="#default-conf文件" class="headerlink" title="default.conf文件"></a>default.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    listen  [::]:80;</span><br><span class="line">    server_name  localhost;</span><br><span class="line"></span><br><span class="line">    #access_log  /var/log/nginx/host.access.log  main;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #error_page  404              /404.html;</span><br><span class="line"></span><br><span class="line">    # redirect server error pages to the static page /50x.html</span><br><span class="line">    #</span><br><span class="line">    error_page   500 502 503 504  /50x.html;</span><br><span class="line">    location = /index.html &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # proxy the PHP scripts to Apache listening on 127.0.0.1:80</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    proxy_pass   http://127.0.0.1;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    root           html;</span><br><span class="line">    #    fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">    #    fastcgi_index  index.php;</span><br><span class="line">    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;</span><br><span class="line">    #    include        fastcgi_params;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # deny access to .htaccess files, if Apache&#x27;s document root</span><br><span class="line">    # concurs with nginx&#x27;s one</span><br><span class="line">    #</span><br><span class="line">    #location ~ /\.ht &#123;</span><br><span class="line">    #    deny  all;</span><br><span class="line">    #&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此结合<code>nginx.conf</code>文件和<code>default.conf</code>文件不难看出nginx的配置结构为以下这种情况：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">#全局块</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">#events块</span><br><span class="line">events &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#http块</span><br><span class="line">http</span><br><span class="line">&#123;</span><br><span class="line">	#http全局块</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    #server块</span><br><span class="line">    server</span><br><span class="line">    &#123; </span><br><span class="line">    	#server全局块</span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">		#location块</span><br><span class="line">        location [PATTERN]</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    #http全局块</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>全局块：配置影响nginx全局的指令。一般有运行nginx服务器的用户组，nginx进程pid存放路径，日志存放路径，配置文件引入，允许生成worker process数等。</li>
+<li>events块：配置影响nginx服务器或与用户的网络连接。有每个进程的最大连接数，选取哪种事件驱动模型处理连接请求，是否允许同时接受多个网路连接，开启多个网络连接序列化等。</li>
+<li>http块：可以嵌套多个server，配置代理，缓存，日志定义等绝大多数功能和第三方模块的配置。如文件引入，mime-type定义，日志自定义，是否使用sendfile传输文件，连接超时时间，单连接请求数等。</li>
+<li>server块：配置虚拟主机的相关参数，一个http中可以有多个server</li>
+<li>location块：配置请求的路由，以及各种页面的处理情况。</li>
+</ul>
+<h2 id="配置server块"><a href="#配置server块" class="headerlink" title="配置server块"></a>配置server块</h2><p>我们在部署项目时最常配置的就是如default.conf文件所示的server块的配置。基本就是<code>监听一个端口</code>，当请求nginx主机ip+端口时自然就进入了监听该端口的server；<code>监听一个地址</code>，该地址为当前server服务所在地址；<code>对请求路由</code>，即对请求的URL进行过滤匹配，访问具体的静态资源或服务。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>路由静态资源</strong><br>当请求静态资源时，路由方式如下（因为nginx首页内容即为前端静态资源，故此出以default.nginx对首页资源的路由举例）：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>路由服务地址</strong><br>当请求后端服务时，路由方式如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">upstream myserver&#123;</span><br><span class="line">    server 172.17.0.4:8000;</span><br><span class="line">    server 172.17.0.5:8000;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /api &#123;</span><br><span class="line">   proxy_pass http://myserver;</span><br><span class="line">   index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="root与alias"><a href="#root与alias" class="headerlink" title="root与alias"></a>root与alias</h2><p><strong>root</strong><br>root是用来指定访问资源的文件路径的，nginx会<code>将root的值和location的值进行拼接</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
+<figure class="highlight plaintext"><figcaption><span>/login/&#123;</span></figcaption><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    root    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>访问结果如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/login/index.html</span><br><span class="line">/login/b --&gt; /usr/local/login/b/index.html</span><br></pre></td></tr></table></figure>
+
+<p><strong>alias</strong><br>alias也是用来指定访问资源的文件路径的，但是nginx会<code>将alias的值替换location的值</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>访问结果如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/index.html</span><br><span class="line">/login/b --&gt; /usr/local/b/index.html</span><br></pre></td></tr></table></figure>
+
+<p>另外：alias指定的是文件夹路径，不能直接指定到具体的文件，否则会500，例如</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local/index.html;</span><br><span class="line">    #index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">这种配置会让nginx报出500</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>使用alias的时候，url后面如果加了斜杠，则下面的路径必须也加斜杠，否则403</code>。<br><strong>index</strong><br>index就是用来指定具体的资源的名字的，index可以指定多个资源的名字，第一个匹配不到，就会匹配第二个，直到匹配到为止。但是<code>location使用严格匹配的时候（加了个等于号），不能使用index，否则会导致root失效</code>，如：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location =/login/&#123;</span><br><span class="line">    root    /usr/local/;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">当访问的url为/login/时，实际访问的资源为：nginx的默认document_root/login/index.html，使得root失效，值得注意的是nginx的默认document_root和我们root指定的是不一样的，所以最后会404</span><br></pre></td></tr></table></figure>
+
+<p><strong>常见配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">########### 每个指令必须有分号结束。#################</span><br><span class="line">#user administrator administrators;  #配置用户或者组，默认为nobody nobody。</span><br><span class="line">#worker_processes 2;  #允许生成的进程数，默认为1</span><br><span class="line">#pid /nginx/pid/nginx.pid;   #指定nginx进程运行文件存放地址</span><br><span class="line">error_log log/error.log debug;  #制定日志路径，级别。这个设置可以放入全局块，http块，server块，级别以此为：debug|info|notice|warn|error|crit|alert|emerg</span><br><span class="line">events &#123;</span><br><span class="line">    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on</span><br><span class="line">    multi_accept on;  #设置一个进程是否同时接受多个网络连接，默认为off</span><br><span class="line">    #use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport</span><br><span class="line">    worker_connections  1024;    #最大连接数，默认为512</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;   #文件扩展名与文件类型映射表</span><br><span class="line">    default_type  application/octet-stream; #默认文件类型，默认为text/plain</span><br><span class="line">    #access_log off; #取消服务日志    </span><br><span class="line">    log_format myFormat &#x27;$remote_addr–$remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $http_x_forwarded_for&#x27;; #自定义格式</span><br><span class="line">    access_log log/access.log myFormat;  #combined为日志格式的默认值</span><br><span class="line">    sendfile on;   #允许sendfile方式传输文件，默认为off，可以在http块，server块，location块。</span><br><span class="line">    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。</span><br><span class="line">    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。</span><br><span class="line"></span><br><span class="line">    upstream mysvr &#123;   </span><br><span class="line">      server 127.0.0.1:7878;</span><br><span class="line">      server 192.168.10.121:3333 backup;  #热备</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 https://www.baidu.com; #错误页</span><br><span class="line">    server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
+        <tag>Nginx</tag>
+      </tags>
   </entry>
   <entry>
     <title>java.lang.NoClassDefFoundError javaxservlethttpHttpServlet</title>
@@ -403,104 +403,45 @@
       </tags>
   </entry>
   <entry>
-    <title>众包平台设计</title>
-    <url>/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</url>
-    <content><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p>
-<p>线上获取：直接访问受信任的三方或私人数据集</p>
-<h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p>
-<p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p>
-<p><strong>LeoFS：</strong>不是很可控，可控性差</p>
-<p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p>
-<p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p>
-<p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p>
-<p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p>
-<p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p>
-<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p>
-<h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p>
-<p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p>
-<p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p>
-<p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p>
-<p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p>
-<p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p>
-<h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><p><span style="color:red"><strong>标注要求：</strong></span></p>
-<p>- </p>
-<h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul>
-<li><p>数据集的标注信息是保存在mysql当中的。</p>
-<ul>
-<li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li>
-<li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li>
-</ul>
-</li>
-<li><p>具体的数据集所对应的标注信息是在下载时生成的。</p>
-<ul>
-<li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li>
-<li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li>
-<li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li>
-<li>下载时生成保证了标注信息的准确性和实时性</li>
-</ul>
-</li>
-<li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p>
-<ul>
-<li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li>
-</ul>
-</li>
-<li><p>频繁请求标注信息下载怎么办</p>
-</li>
-</ul>
-<h3 id="组织方式"><a href="#组织方式" class="headerlink" title="组织方式"></a>组织方式</h3><p>- </p>
-<h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><h3 id="分享数据集"><a href="#分享数据集" class="headerlink" title="分享数据集"></a>分享数据集</h3><h3 id="下载数据集"><a href="#下载数据集" class="headerlink" title="下载数据集"></a>下载数据集</h3><h3 id="引用数据集"><a href="#引用数据集" class="headerlink" title="引用数据集"></a>引用数据集</h3>]]></content>
-      <categories>
-        <category>项目</category>
-      </categories>
-      <tags>
-        <tag>大数据实训平台</tag>
-        <tag>数据众包</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>枚举类使用场景</title>
-    <url>/2020/10/20/%E6%9E%9A%E4%B8%BE%E7%B1%BB%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/</url>
-    <content><![CDATA[<h2 id="枚举（enum）"><a href="#枚举（enum）" class="headerlink" title="枚举（enum）"></a><a href="https://so.csdn.net/so/search?q=%E6%9E%9A%E4%B8%BE&spm=1001.2101.3001.7020">枚举</a>（enum）</h2><p><strong>前言：</strong><br>初次学习，本人更注重<code>实用性</code>。许多文章都对枚举类进行了很详细的介绍，比如它是jdk1.5后引入的新特性、继承了 java.lang.<a href="https://so.csdn.net/so/search?q=Enum&spm=1001.2101.3001.7020">Enum</a>类等，在此就不多阐述。本文重点解释<code>枚举类的字段</code>，以及一些<code>枚举类的使用场景</code>。</p>
-<p><strong>枚举类的理解：</strong></p>
-<ol>
-<li>所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。</li>
-<li>当需要定义一组常量时，强烈建议使用枚举类。</li>
-<li>如果枚举类中只有一个对象，则可以作为单列模式的实现方式。</li>
-</ol>
-<p>看完后是不是很懵逼？不慌，这些是别人文章中千篇一律的东西，本文中这些东西不会是重点。</p>
-<hr>
+    <title>冒泡排序的异或优化</title>
+    <url>/2020/10/14/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F%E7%9A%84%E5%BC%82%E6%88%96%E4%BC%98%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="你会写冒泡排序吗"><a href="#你会写冒泡排序吗" class="headerlink" title="你会写冒泡排序吗"></a>你会写<a href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>吗</h2><p>给你一个数组，让你排序，怎么办？（别跟我扯sort函数）<br>方法很多，但是看标题，今天就用冒泡！</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920141924627.png" alt="image-20220920141924627"></p>
+<p>你可能会这样写？</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><strong>如何写一个枚举类？</strong></p>
-<p>jdk5.0之前，我们要自定义枚举类，jdk5.0，可以使用<code>enum</code>关键字定义枚举类。还是那句话，初次学习，我更注重应用。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ColorEnum</span>&#123;</span><br><span class="line">	<span class="comment">//一个枚举类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也或许你会这样写</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><strong>我们常见的枚举类里的那些看不懂的东西：</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED,</span><br><span class="line">    GREEN,</span><br><span class="line">    PINK,</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//执行结果为：</span></span><br><span class="line"><span class="comment">//RED</span></span><br></pre></td></tr></table></figure>
+<h2 id="有没有想过不要temp？"><a href="#有没有想过不要temp？" class="headerlink" title="有没有想过不要temp？"></a>有没有想过不要temp？</h2><p>temp作为冒泡排序中的经典变量，你可曾想过哪一天能够把它去除？把值交换做到想象中的一样简单，交换就是交换，为嘛我的先给路人甲，你的再给我，你再去向路人甲要，没路人甲就不办事了吗？</p>
+<p>你不妨试一下这种写法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">                arr[i] ^= arr[j];</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>先说说这几个<code>字段</code>（RED、GREEN、PINK）是啥。你以为它们是常量？好吧，开始我也这么以为，比如“Colors.RED”，是不是很像是通过类名访问静态变量？可它的输出结果又，，，，，最终我发现用<code>枚举类对象</code>形容它们更合适。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes());<span class="comment">//此处GREEN相当于一个枚举类对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是RED对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你看到了，这次没有temp了。</p>
+<h2 id="用异或运算交换变量值"><a href="#用异或运算交换变量值" class="headerlink" title="用异或运算交换变量值"></a>用<a href="https://so.csdn.net/so/search?q=%E5%BC%82%E6%88%96%E8%BF%90%E7%AE%97&spm=1001.2101.3001.7020">异或运算</a>交换变量值</h2><p>你我都懂，异或运算是用在二进制之间的一种运算，同则0异则1…巴拉巴拉…。<code>1^1=0</code>、<code>1^0=1</code>、<code>0^0=0</code></p>
+<p>那我就是要用 5^6 会怎么样呢？<code>5^6=?</code></p>
+<p>那必是一个和5、6都无关的值啊，你在想什么？</p>
+<p><strong>但是课本上有这样三个公式：<code>a^a=0</code>、<code>a^a^b=b</code>、<code>0^b=b</code></strong></p>
+<p>第一个我知道你懂，我第一次看也懂了，那么第二个…</p>
+<p>假设<code>b=3</code>，因为<code>a^a=0</code>，所以<code>a^a^b=0^b=0^3</code>，<code>0^3</code>…</p>
+<p>3的二进制是11,<code>00^11=11</code> → 还是3！</p>
+<p>整数转二进制不过是01组合，<code>0^0=0</code>，<code>1^0=1</code>，那不就是<code>0^b=b</code></p>
+<p><strong>还不懂？</strong></p>
+<p>再看看这组代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">arr[j] ^= arr[i];</span><br><span class="line">arr[i] ^= arr[j];</span><br><span class="line">arr[j] ^= arr[i];</span><br></pre></td></tr></table></figure>
 
-<p>从以上代码中的三个颜色的字段我们可以理解 <strong>“所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。”</strong> 这句话了。<br>那么问题又来了，<code>这些字段如何去用呢</code>？</p>
-<ol>
-<li><p>字段配合抽象方法使用(<code>抽象方法一经定义，所有字段必须实现</code>)。同时字段中也可以（只能）重写枚举类中的普通方法（<code>字段中不能写枚举类中不存在的新的方法</code>）。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes2());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">	GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是对抽象类中方法的重写&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;这是enum自己的方法&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>字段配合构造器使用。可用于前后端分离时，为前端<code>返回状态码</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED.getColor());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span> &#123;</span><br><span class="line">    RED(<span class="string">&quot;red&quot;</span>,<span class="string">&quot;这是红色&quot;</span>) &#123;&#125;,</span><br><span class="line">    PINK(<span class="string">&quot;pink&quot;</span>,<span class="string">&quot;这是粉色&quot;</span>) &#123;&#125;,</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String color;</span><br><span class="line">    <span class="keyword">private</span> String describe;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Colors</span><span class="params">(String color, String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getColor</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setColor</span><span class="params">(String color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getDescribe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDescribe</span><span class="params">(String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h2 id="枚举的内存占用问题"><a href="#枚举的内存占用问题" class="headerlink" title="枚举的内存占用问题"></a>枚举的内存占用问题</h2><p><a href="https://blog.csdn.net/vfush/article/details/79881818?ops_request_misc=&request_id=&biz_id=102&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-79881818.nonecase">参考文章</a>,个人感觉这一篇就已经写的很详细了，在此推荐一下。<br>关于内存问题总结如下：</p>
-<ol>
-<li>可通过一些反编译手段，比如黑窗口中javap -p ***.class 命令，或者jad工具，推荐后者。</li>
-<li>枚举类是一个继承java.lang.Enum的final类，它的成员变量也是final常量。</li>
-<li>我们定义的枚举，编译器会将其转换成一个类（这就是说为什么枚举本身就是一个类），编译器还会帮我们生成多个枚举类的实例，赋值给我们定义的枚举类型常量，并且还声明了一个枚举对象的数组，保存了所有的枚举对象。<a href="https://blog.csdn.net/xiao_nian/article/details/80002101?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522160834401016780304676548%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=160834401016780304676548&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-80002101.nonecase&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98">参考博客</a></li>
-</ol>
-<p><strong>对于枚举的常用方法啥的，在此就不一一解释了，相信大多数博客中都有介绍。</strong></p>
+<p>设 <code>arr[i]=X</code>、<code>arr[j]=Y</code></p>
+<p>①<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X</code></p>
+<p>②<code>arr[i] ^= arr[j];</code> → <code>arr[i]=X^Y^X=Y</code> → <code>arr[i]=Y</code></p>
+<p>③<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X^Y=X</code> → <code>arr[j]=X</code></p>
+<h2 id="引申问题"><a href="#引申问题" class="headerlink" title="引申问题"></a>引申问题</h2><p><strong>给你一个数组，里面有若干数据，其中只有一个数据元素出现的次数是奇数次，请你找出这个出现次数为奇数次的元素。</strong></p>
+<p>对！文章看到这里了，你还遍历元素，给每个元素都加一个计数器，用<code>==</code>对比判断。</p>
 ]]></content>
       <categories>
-        <category>java</category>
+        <category>算法</category>
       </categories>
       <tags>
-        <tag>Enum</tag>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -575,45 +516,49 @@
       </tags>
   </entry>
   <entry>
-    <title>冒泡排序的异或优化</title>
-    <url>/2020/10/14/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F%E7%9A%84%E5%BC%82%E6%88%96%E4%BC%98%E5%8C%96/</url>
-    <content><![CDATA[<h2 id="你会写冒泡排序吗"><a href="#你会写冒泡排序吗" class="headerlink" title="你会写冒泡排序吗"></a>你会写<a href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>吗</h2><p>给你一个数组，让你排序，怎么办？（别跟我扯sort函数）<br>方法很多，但是看标题，今天就用冒泡！</p>
-<p><img src="http://qn.mfei.fun/img/image-20220920141924627.png" alt="image-20220920141924627"></p>
-<p>你可能会这样写？</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <title>枚举类使用场景</title>
+    <url>/2020/10/20/%E6%9E%9A%E4%B8%BE%E7%B1%BB%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/</url>
+    <content><![CDATA[<h2 id="枚举（enum）"><a href="#枚举（enum）" class="headerlink" title="枚举（enum）"></a><a href="https://so.csdn.net/so/search?q=%E6%9E%9A%E4%B8%BE&spm=1001.2101.3001.7020">枚举</a>（enum）</h2><p><strong>前言：</strong><br>初次学习，本人更注重<code>实用性</code>。许多文章都对枚举类进行了很详细的介绍，比如它是jdk1.5后引入的新特性、继承了 java.lang.<a href="https://so.csdn.net/so/search?q=Enum&spm=1001.2101.3001.7020">Enum</a>类等，在此就不多阐述。本文重点解释<code>枚举类的字段</code>，以及一些<code>枚举类的使用场景</code>。</p>
+<p><strong>枚举类的理解：</strong></p>
+<ol>
+<li>所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。</li>
+<li>当需要定义一组常量时，强烈建议使用枚举类。</li>
+<li>如果枚举类中只有一个对象，则可以作为单列模式的实现方式。</li>
+</ol>
+<p>看完后是不是很懵逼？不慌，这些是别人文章中千篇一律的东西，本文中这些东西不会是重点。</p>
+<hr>
 
-<p>也或许你会这样写</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">	<span class="type">int</span> temp;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                temp = arr[i];</span><br><span class="line">                arr[i] = arr[j];</span><br><span class="line">                arr[j] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>如何写一个枚举类？</strong></p>
+<p>jdk5.0之前，我们要自定义枚举类，jdk5.0，可以使用<code>enum</code>关键字定义枚举类。还是那句话，初次学习，我更注重应用。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ColorEnum</span>&#123;</span><br><span class="line">	<span class="comment">//一个枚举类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="有没有想过不要temp？"><a href="#有没有想过不要temp？" class="headerlink" title="有没有想过不要temp？"></a>有没有想过不要temp？</h2><p>temp作为冒泡排序中的经典变量，你可曾想过哪一天能够把它去除？把值交换做到想象中的一样简单，交换就是交换，为嘛我的先给路人甲，你的再给我，你再去向路人甲要，没路人甲就不办事了吗？</p>
-<p>你不妨试一下这种写法：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] poLuPoLuSort(<span class="type">int</span>[] arr)&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++)&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; arr.length; j++)&#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] &gt; arr[j])&#123;</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">                arr[i] ^= arr[j];</span><br><span class="line">                arr[j] ^= arr[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>我们常见的枚举类里的那些看不懂的东西：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED,</span><br><span class="line">    GREEN,</span><br><span class="line">    PINK,</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//执行结果为：</span></span><br><span class="line"><span class="comment">//RED</span></span><br></pre></td></tr></table></figure>
 
-<p>你看到了，这次没有temp了。</p>
-<h2 id="用异或运算交换变量值"><a href="#用异或运算交换变量值" class="headerlink" title="用异或运算交换变量值"></a>用<a href="https://so.csdn.net/so/search?q=%E5%BC%82%E6%88%96%E8%BF%90%E7%AE%97&spm=1001.2101.3001.7020">异或运算</a>交换变量值</h2><p>你我都懂，异或运算是用在二进制之间的一种运算，同则0异则1…巴拉巴拉…。<code>1^1=0</code>、<code>1^0=1</code>、<code>0^0=0</code></p>
-<p>那我就是要用 5^6 会怎么样呢？<code>5^6=?</code></p>
-<p>那必是一个和5、6都无关的值啊，你在想什么？</p>
-<p><strong>但是课本上有这样三个公式：<code>a^a=0</code>、<code>a^a^b=b</code>、<code>0^b=b</code></strong></p>
-<p>第一个我知道你懂，我第一次看也懂了，那么第二个…</p>
-<p>假设<code>b=3</code>，因为<code>a^a=0</code>，所以<code>a^a^b=0^b=0^3</code>，<code>0^3</code>…</p>
-<p>3的二进制是11,<code>00^11=11</code> → 还是3！</p>
-<p>整数转二进制不过是01组合，<code>0^0=0</code>，<code>1^0=1</code>，那不就是<code>0^b=b</code></p>
-<p><strong>还不懂？</strong></p>
-<p>再看看这组代码</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">arr[j] ^= arr[i];</span><br><span class="line">arr[i] ^= arr[j];</span><br><span class="line">arr[j] ^= arr[i];</span><br></pre></td></tr></table></figure>
+<p>先说说这几个<code>字段</code>（RED、GREEN、PINK）是啥。你以为它们是常量？好吧，开始我也这么以为，比如“Colors.RED”，是不是很像是通过类名访问静态变量？可它的输出结果又，，，，，最终我发现用<code>枚举类对象</code>形容它们更合适。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes());<span class="comment">//此处GREEN相当于一个枚举类对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是RED对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>设 <code>arr[i]=X</code>、<code>arr[j]=Y</code></p>
-<p>①<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X</code></p>
-<p>②<code>arr[i] ^= arr[j];</code> → <code>arr[i]=X^Y^X=Y</code> → <code>arr[i]=Y</code></p>
-<p>③<code>arr[j] ^= arr[i];</code> → <code>arr[j]=Y^X^Y=X</code> → <code>arr[j]=X</code></p>
-<h2 id="引申问题"><a href="#引申问题" class="headerlink" title="引申问题"></a>引申问题</h2><p><strong>给你一个数组，里面有若干数据，其中只有一个数据元素出现的次数是奇数次，请你找出这个出现次数为奇数次的元素。</strong></p>
-<p>对！文章看到这里了，你还遍历元素，给每个元素都加一个计数器，用<code>==</code>对比判断。</p>
+<p>从以上代码中的三个颜色的字段我们可以理解 <strong>“所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。”</strong> 这句话了。<br>那么问题又来了，<code>这些字段如何去用呢</code>？</p>
+<ol>
+<li><p>字段配合抽象方法使用(<code>抽象方法一经定义，所有字段必须实现</code>)。同时字段中也可以（只能）重写枚举类中的普通方法（<code>字段中不能写枚举类中不存在的新的方法</code>）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes2());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">	GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是对抽象类中方法的重写&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;这是enum自己的方法&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字段配合构造器使用。可用于前后端分离时，为前端<code>返回状态码</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED.getColor());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span> &#123;</span><br><span class="line">    RED(<span class="string">&quot;red&quot;</span>,<span class="string">&quot;这是红色&quot;</span>) &#123;&#125;,</span><br><span class="line">    PINK(<span class="string">&quot;pink&quot;</span>,<span class="string">&quot;这是粉色&quot;</span>) &#123;&#125;,</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String color;</span><br><span class="line">    <span class="keyword">private</span> String describe;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Colors</span><span class="params">(String color, String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getColor</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setColor</span><span class="params">(String color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getDescribe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDescribe</span><span class="params">(String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="枚举的内存占用问题"><a href="#枚举的内存占用问题" class="headerlink" title="枚举的内存占用问题"></a>枚举的内存占用问题</h2><p><a href="https://blog.csdn.net/vfush/article/details/79881818?ops_request_misc=&request_id=&biz_id=102&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-79881818.nonecase">参考文章</a>,个人感觉这一篇就已经写的很详细了，在此推荐一下。<br>关于内存问题总结如下：</p>
+<ol>
+<li>可通过一些反编译手段，比如黑窗口中javap -p ***.class 命令，或者jad工具，推荐后者。</li>
+<li>枚举类是一个继承java.lang.Enum的final类，它的成员变量也是final常量。</li>
+<li>我们定义的枚举，编译器会将其转换成一个类（这就是说为什么枚举本身就是一个类），编译器还会帮我们生成多个枚举类的实例，赋值给我们定义的枚举类型常量，并且还声明了一个枚举对象的数组，保存了所有的枚举对象。<a href="https://blog.csdn.net/xiao_nian/article/details/80002101?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522160834401016780304676548%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=160834401016780304676548&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-80002101.nonecase&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98">参考博客</a></li>
+</ol>
+<p><strong>对于枚举的常用方法啥的，在此就不一一解释了，相信大多数博客中都有介绍。</strong></p>
 ]]></content>
       <categories>
-        <category>算法</category>
+        <category>java</category>
       </categories>
       <tags>
-        <tag>算法</tag>
+        <tag>Enum</tag>
       </tags>
   </entry>
   <entry>
@@ -631,6 +576,32 @@
       </categories>
       <tags>
         <tag>服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>状态模式</title>
+    <url>/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>状态模式（State Pattern）：允许一个对象在其内部状态改变时改变它的行为，对象看起来似乎修改了它的类。其别名为状态对象（Objects for Status）。简而言之——<code>对象可根据不同情况作出不同行为</code>。</p>
+<p><code>阿里规范手册有言：</code>超过三层的if-else的逻辑判断代码可以使用卫语句（指在分支判断中提前返回）、策略模式、状态模式来实现，其中卫语句示例如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">today</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isBusy()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;change time.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (isFree()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;go to travel.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="代码对比演示"><a href="#代码对比演示" class="headerlink" title="代码对比演示"></a>代码对比演示</h3><p><strong>条件判断对象属性</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Happy&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sad&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sick&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>状态模式改造</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Student</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Student</span>();</span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Happy</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 跑着去学校</span></span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Sad</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 走着去学校</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 状态接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">changeState</span><span class="params">(State state)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>改用枚举</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Student.Happy.howToGo();</span><br><span class="line">        Student.Sad.howToGo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    Happy(<span class="keyword">new</span> <span class="title class_">Happy</span>()),</span><br><span class="line"></span><br><span class="line">    Sad(<span class="keyword">new</span> <span class="title class_">Sad</span>()),</span><br><span class="line"></span><br><span class="line">    Sick(<span class="keyword">new</span> <span class="title class_">Sick</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line"></span><br><span class="line">    Student(State state) &#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/~%60MMWQC6YI5N$N_RZM$9R%60S.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>设计模式</category>
+      </categories>
+      <tags>
+        <tag>设计模式</tag>
+        <tag>状态模式</tag>
       </tags>
   </entry>
   <entry>
@@ -666,32 +637,6 @@
       <tags>
         <tag>大数据实训平台</tag>
         <tag>数据众包</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>状态模式</title>
-    <url>/2021/04/01/%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>状态模式（State Pattern）：允许一个对象在其内部状态改变时改变它的行为，对象看起来似乎修改了它的类。其别名为状态对象（Objects for Status）。简而言之——<code>对象可根据不同情况作出不同行为</code>。</p>
-<p><code>阿里规范手册有言：</code>超过三层的if-else的逻辑判断代码可以使用卫语句（指在分支判断中提前返回）、策略模式、状态模式来实现，其中卫语句示例如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">today</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isBusy()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;change time.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (isFree()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;go to travel.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="代码对比演示"><a href="#代码对比演示" class="headerlink" title="代码对比演示"></a>代码对比演示</h3><p><strong>条件判断对象属性</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Happy&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sad&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="string">&quot;Sick&quot;</span>.equals(zhangSan.getState()))&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>状态模式改造</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Student</span> <span class="variable">zhangSan</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Student</span>();</span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Happy</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 跑着去学校</span></span><br><span class="line">        zhangSan.changeState(<span class="keyword">new</span> <span class="title class_">Sad</span>());</span><br><span class="line">        zhangSan.howToGo(); <span class="comment">// 走着去学校</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 状态接口</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">changeState</span><span class="params">(State state)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>改用枚举</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StatePattern</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Student.Happy.howToGo();</span><br><span class="line">        Student.Sad.howToGo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Happy</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;跑着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sad</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;走着去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sick</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">goSchool</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;病了不去学校&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Student</span>&#123;</span><br><span class="line">    Happy(<span class="keyword">new</span> <span class="title class_">Happy</span>()),</span><br><span class="line"></span><br><span class="line">    Sad(<span class="keyword">new</span> <span class="title class_">Sad</span>()),</span><br><span class="line"></span><br><span class="line">    Sick(<span class="keyword">new</span> <span class="title class_">Sick</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line"></span><br><span class="line">    Student(State state) &#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">howToGo</span><span class="params">()</span>&#123;</span><br><span class="line">        state.goSchool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h3><p><img src="http://qn.mfei.fun/img/~%60MMWQC6YI5N$N_RZM$9R%60S.png" alt="img"></p>
-]]></content>
-      <categories>
-        <category>设计模式</category>
-      </categories>
-      <tags>
-        <tag>设计模式</tag>
-        <tag>状态模式</tag>
       </tags>
   </entry>
   <entry>
@@ -844,6 +789,78 @@
       <tags>
         <tag>支付</tag>
         <tag>微信</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>众包平台设计</title>
+    <url>/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</url>
+    <content><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p>
+<p>线上获取：直接访问受信任的三方或私人数据集</p>
+<h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p>
+<p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p>
+<p><strong>LeoFS：</strong>不是很可控，可控性差</p>
+<p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p>
+<p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p>
+<p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p>
+<p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p>
+<p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p>
+<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p>
+<h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p>
+<p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p>
+<p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p>
+<p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p>
+<p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p>
+<p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p>
+<h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul>
+<li><p>数据集的标注信息是保存在mysql当中的。</p>
+<ul>
+<li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li>
+<li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li>
+</ul>
+</li>
+<li><p>具体的数据集所对应的标注信息是在下载时生成的。</p>
+<ul>
+<li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li>
+<li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li>
+<li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li>
+<li>下载时生成保证了标注信息的准确性和实时性</li>
+</ul>
+</li>
+<li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p>
+<ul>
+<li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li>
+</ul>
+</li>
+<li><p>频繁请求标注信息下载怎么办</p>
+</li>
+</ul>
+<h3 id="组织下载"><a href="#组织下载" class="headerlink" title="组织下载"></a>组织下载</h3><ul>
+<li><p>数据集下载：直接将数据集所在MinIo中的URL返回给前端</p>
+</li>
+<li><p>标注信息下载</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [文件<span class="number">1</span>地址, 文件<span class="number">2</span>地址...],</span><br><span class="line">    <span class="string">&quot;文件1名称:标注信息</span></span><br><span class="line"><span class="string">     文件2名称:标注信息</span></span><br><span class="line"><span class="string">     ...&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><ul>
+<li>查询私有数据集未标注的数据量</li>
+<li>一次可分配一组标注任务（每组标注任务有共同的组别标识）</li>
+</ul>
+<h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><p>平台使用者可在众包中心接单标注任务</p>
+<h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><p>标注任务完成后可提交审核，由任务发布者进行审核</p>
+<h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><ul>
+<li><p>分享数据集下载地址</p>
+</li>
+<li><p>直接下载数据集</p>
+</li>
+<li><p>在算法建模模块直接引用数据集</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>项目</category>
+      </categories>
+      <tags>
+        <tag>大数据实训平台</tag>
+        <tag>数据众包</tag>
       </tags>
   </entry>
 </search>
