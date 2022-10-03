@@ -149,6 +149,180 @@
       </tags>
   </entry>
   <entry>
+    <title>Nginx配置信息</title>
+    <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
+    <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
+<h2 id="nginx-conf文件"><a href="#nginx-conf文件" class="headerlink" title="nginx.conf文件"></a><a href="https://so.csdn.net/so/search?q=nginx&spm=1001.2101.3001.7020">nginx</a>.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">user  nginx;</span><br><span class="line">worker_processes  auto;</span><br><span class="line"></span><br><span class="line">error_log  /var/log/nginx/error.log notice;</span><br><span class="line">pid        /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从这个配置文件看得出以下信息：</p>
+<ul>
+<li>日志位置：&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log</li>
+<li>最大连接数（默认）：1024</li>
+<li><code>文件引入断言：/etc/nginx/conf.d/*.conf</code></li>
+</ul>
+<h2 id="conf-d文件夹"><a href="#conf-d文件夹" class="headerlink" title="conf.d文件夹"></a>conf.d文件夹</h2><ul>
+<li>在该文件夹下有一个<code>default.conf</code>文件为nginx默认配置</li>
+<li>根据<code>nginx.conf</code>文件中的配置断言看得出，自定义配置也应当放在<code>conf.d</code>文件夹中</li>
+</ul>
+<h2 id="default-conf文件"><a href="#default-conf文件" class="headerlink" title="default.conf文件"></a>default.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    listen  [::]:80;</span><br><span class="line">    server_name  localhost;</span><br><span class="line"></span><br><span class="line">    #access_log  /var/log/nginx/host.access.log  main;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #error_page  404              /404.html;</span><br><span class="line"></span><br><span class="line">    # redirect server error pages to the static page /50x.html</span><br><span class="line">    #</span><br><span class="line">    error_page   500 502 503 504  /50x.html;</span><br><span class="line">    location = /index.html &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # proxy the PHP scripts to Apache listening on 127.0.0.1:80</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    proxy_pass   http://127.0.0.1;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    root           html;</span><br><span class="line">    #    fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">    #    fastcgi_index  index.php;</span><br><span class="line">    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;</span><br><span class="line">    #    include        fastcgi_params;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # deny access to .htaccess files, if Apache&#x27;s document root</span><br><span class="line">    # concurs with nginx&#x27;s one</span><br><span class="line">    #</span><br><span class="line">    #location ~ /\.ht &#123;</span><br><span class="line">    #    deny  all;</span><br><span class="line">    #&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此结合<code>nginx.conf</code>文件和<code>default.conf</code>文件不难看出nginx的配置结构为以下这种情况：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">#全局块</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">#events块</span><br><span class="line">events &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#http块</span><br><span class="line">http</span><br><span class="line">&#123;</span><br><span class="line">	#http全局块</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    #server块</span><br><span class="line">    server</span><br><span class="line">    &#123; </span><br><span class="line">    	#server全局块</span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">		#location块</span><br><span class="line">        location [PATTERN]</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    #http全局块</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>全局块：配置影响nginx全局的指令。一般有运行nginx服务器的用户组，nginx进程pid存放路径，日志存放路径，配置文件引入，允许生成worker process数等。</li>
+<li>events块：配置影响nginx服务器或与用户的网络连接。有每个进程的最大连接数，选取哪种事件驱动模型处理连接请求，是否允许同时接受多个网路连接，开启多个网络连接序列化等。</li>
+<li>http块：可以嵌套多个server，配置代理，缓存，日志定义等绝大多数功能和第三方模块的配置。如文件引入，mime-type定义，日志自定义，是否使用sendfile传输文件，连接超时时间，单连接请求数等。</li>
+<li>server块：配置虚拟主机的相关参数，一个http中可以有多个server</li>
+<li>location块：配置请求的路由，以及各种页面的处理情况。</li>
+</ul>
+<h2 id="配置server块"><a href="#配置server块" class="headerlink" title="配置server块"></a>配置server块</h2><p>我们在部署项目时最常配置的就是如default.conf文件所示的server块的配置。基本就是<code>监听一个端口</code>，当请求nginx主机ip+端口时自然就进入了监听该端口的server；<code>监听一个地址</code>，该地址为当前server服务所在地址；<code>对请求路由</code>，即对请求的URL进行过滤匹配，访问具体的静态资源或服务。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>路由静态资源</strong><br>当请求静态资源时，路由方式如下（因为nginx首页内容即为前端静态资源，故此出以default.nginx对首页资源的路由举例）：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>路由服务地址</strong><br>当请求后端服务时，路由方式如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">upstream myserver&#123;</span><br><span class="line">    server 172.17.0.4:8000;</span><br><span class="line">    server 172.17.0.5:8000;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /api &#123;</span><br><span class="line">   proxy_pass http://myserver;</span><br><span class="line">   index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="root与alias"><a href="#root与alias" class="headerlink" title="root与alias"></a>root与alias</h2><p><strong>root</strong><br>root是用来指定访问资源的文件路径的，nginx会<code>将root的值和location的值进行拼接</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
+<figure class="highlight plaintext"><figcaption><span>/login/&#123;</span></figcaption><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    root    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>访问结果如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/login/index.html</span><br><span class="line">/login/b --&gt; /usr/local/login/b/index.html</span><br></pre></td></tr></table></figure>
+
+<p><strong>alias</strong><br>alias也是用来指定访问资源的文件路径的，但是nginx会<code>将alias的值替换location的值</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>访问结果如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/index.html</span><br><span class="line">/login/b --&gt; /usr/local/b/index.html</span><br></pre></td></tr></table></figure>
+
+<p>另外：alias指定的是文件夹路径，不能直接指定到具体的文件，否则会500，例如</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local/index.html;</span><br><span class="line">    #index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">这种配置会让nginx报出500</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>使用alias的时候，url后面如果加了斜杠，则下面的路径必须也加斜杠，否则403</code>。<br><strong>index</strong><br>index就是用来指定具体的资源的名字的，index可以指定多个资源的名字，第一个匹配不到，就会匹配第二个，直到匹配到为止。但是<code>location使用严格匹配的时候（加了个等于号），不能使用index，否则会导致root失效</code>，如：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location =/login/&#123;</span><br><span class="line">    root    /usr/local/;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">当访问的url为/login/时，实际访问的资源为：nginx的默认document_root/login/index.html，使得root失效，值得注意的是nginx的默认document_root和我们root指定的是不一样的，所以最后会404</span><br></pre></td></tr></table></figure>
+
+<p><strong>常见配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">########### 每个指令必须有分号结束。#################</span><br><span class="line">#user administrator administrators;  #配置用户或者组，默认为nobody nobody。</span><br><span class="line">#worker_processes 2;  #允许生成的进程数，默认为1</span><br><span class="line">#pid /nginx/pid/nginx.pid;   #指定nginx进程运行文件存放地址</span><br><span class="line">error_log log/error.log debug;  #制定日志路径，级别。这个设置可以放入全局块，http块，server块，级别以此为：debug|info|notice|warn|error|crit|alert|emerg</span><br><span class="line">events &#123;</span><br><span class="line">    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on</span><br><span class="line">    multi_accept on;  #设置一个进程是否同时接受多个网络连接，默认为off</span><br><span class="line">    #use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport</span><br><span class="line">    worker_connections  1024;    #最大连接数，默认为512</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;   #文件扩展名与文件类型映射表</span><br><span class="line">    default_type  application/octet-stream; #默认文件类型，默认为text/plain</span><br><span class="line">    #access_log off; #取消服务日志    </span><br><span class="line">    log_format myFormat &#x27;$remote_addr–$remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $http_x_forwarded_for&#x27;; #自定义格式</span><br><span class="line">    access_log log/access.log myFormat;  #combined为日志格式的默认值</span><br><span class="line">    sendfile on;   #允许sendfile方式传输文件，默认为off，可以在http块，server块，location块。</span><br><span class="line">    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。</span><br><span class="line">    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。</span><br><span class="line"></span><br><span class="line">    upstream mysvr &#123;   </span><br><span class="line">      server 127.0.0.1:7878;</span><br><span class="line">      server 192.168.10.121:3333 backup;  #热备</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 https://www.baidu.com; #错误页</span><br><span class="line">    server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>服务器</tag>
+        <tag>Nginx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Minio简介</title>
+    <url>/2022/09/29/Minio%E7%AE%80%E4%BB%8B/</url>
+    <content><![CDATA[<ul>
+<li><p>Minio使用<span style="color:red">纠删码</span>erasure code和<span style="color:red">校验和</span>checksum来防止硬件故障。 即便丢失一半数量（N&#x2F;2）的硬盘，仍然可以恢复数据。</p>
+</li>
+<li><p>Minio完全兼容S3接口，因此也可以作为网关使用，对外提供S3访问。</p>
+</li>
+<li><p>Minio 是个基于 Golang 编写的开源对象存储套件，虽然轻量，却拥有着不错的性能。</p>
+</li>
+<li><p>采用简单可靠的集群方案，摒弃复杂的大规模的集群调度管理，<span style="color:red">建立众多的中小规模、易管理的集群，支持跨数据中心将多个集群聚合成超大资源池</span>，而非直接采用大规模、统一管理的分布式集群。</p>
+</li>
+<li><p>Minio支持云原生，能与Kubernetes、Docker、Swarm编排系统良好对接，实现灵活部署。且部署简单，只有一个可执行文件，参数极少，一条命令即可启动一个Minio系统。</p>
+</li>
+<li><p>Minio为了高性能采取<span style="color:red">无元数据数据库设计</span>，避免元数据库成为整个系统的性能瓶颈，并将故障限制在单个集群之内，从而不会涉及其他集群。</p>
+</li>
+</ul>
+<h2 id="MinIO基础"><a href="#MinIO基础" class="headerlink" title="MinIO基础"></a>MinIO基础</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>Object：存储到MinIO的基本对象，文件、图片、视频等</p>
+<p>Bucket：桶，用来<span style="color:red">存储对象的逻辑空间</span>。每一个桶之间的数据是相互隔离的，相对于用户而言，这就是一个<span style="color:red">存放文件的顶层文件夹</span>。</p>
+<p>Drive：<span style="color:red">存储数据的磁盘</span>，在MinIO启动时，以参数的方式传入。MinIO中所有的对象都存储在Drive中</p>
+<p>Set：一组Drive的集合，此处概念相当于多磁盘存储。分布式部署根据集群规模自动划分一个或者多个Set，每个Set中的Drive分布在不同位置。一个对象存储在一个Set上（在集群中，具体存储到哪个Set中，是根据对象名称进行哈希，最终映射到唯一Set上的）</p>
+<h3 id="Set与Drive的关系"><a href="#Set与Drive的关系" class="headerlink" title="Set与Drive的关系"></a>Set与Drive的关系</h3><p>Set &#x2F;Drive 这两个概念是 MINIO 里面最重要的两个概念，一个对象最终是存储在 Set 上面的。即一个MinIO服务下可对应多个对象存储磁盘（Drive），这一个服务结点下的多个磁盘统称Set；当存入一个对象时，该对象会被等分为n（Set下Drive的个数）份存储在Set下的Drive中。</p>
+<h3 id="MinIO如何写入对象"><a href="#MinIO如何写入对象" class="headerlink" title="MinIO如何写入对象"></a>MinIO如何写入对象</h3><ul>
+<li>通过<span style="color:red">数据编码</span>将原数据编码成N（Set下Drive的个数）份，把每一份写到对应的Drive上面，如此便将一个对象存储在了整个Set上。</li>
+<li>一个集群中包含多个Set，每个对象具体存储在哪一个上面是<span style="color:red">根据对象名进行哈希</span>，然后映射到唯一的Set上面，如此便从理论上保证了数据均匀分布在所有Set上</li>
+<li>存储对象数据分布的也非常均匀，一个 Set 上包含多少个 Drive 是由系统自动根据集群规模算出来的，当然，也可以自己去配置。一个 Set 的 Drive 系统会考虑尽可能把它放在多的节点上面，保证它的可靠性</li>
+</ul>
+<h3 id="Bucket是如何做到数据隔离的"><a href="#Bucket是如何做到数据隔离的" class="headerlink" title="Bucket是如何做到数据隔离的"></a>Bucket是如何做到数据隔离的</h3><h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p><span style="color:red"><strong>去中心化架构</strong></span></p>
+<p><span style="color:red"><strong>统一命名空间</strong></span></p>
+<p><span style="color:red"><strong>分布式锁管理</strong></span></p>
+<p><span style="color:red"><strong>数据结构</strong></span></p>
+<p><span style="color:red"><strong>统一域名访问</strong></span></p>
+<p><span style="color:red"><strong>存储机制</strong></span></p>
+<p><span style="color:red"><strong>lambda计算与持续备份</strong></span></p>
+<p><span style="color:red"><strong>对象存储网关</strong></span></p>
+<h2 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h2><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><p>当传入目标存储对象时</p>
+<ul>
+<li>首先看Minio服务是否是分布式部署。如果是，对象文件会根据文件名Hash到某一Set</li>
+<li>其次看服务实例所对应Set分配了几块存储磁盘。对象文件会被分散存储到这些磁盘上</li>
+</ul>
+<h3 id="存储架构"><a href="#存储架构" class="headerlink" title="存储架构"></a>存储架构</h3><p><span style="color:red"><strong>单主机单硬盘</strong></span></p>
+<p>该模式下，Minio只在<strong>一台服务</strong>器上搭建服务，且数据都存在<strong>单块磁盘</strong>上，该模式存在<strong>单点风险</strong>，主要用作开发、测试等使用</p>
+<p><img src="http://qn.mfei.fun/img/image-20221003092929925.png" alt="image-20221003092929925"></p>
+<p><span style="color:red"><strong>单主机多硬盘</strong></span></p>
+<p>该模式下，Minio在<strong>一台服务器</strong>上搭建服务，但数据分散在<strong>多块（大于4块）磁盘</strong>上，提供了数据上的安全保障</p>
+<p><img src="http://qn.mfei.fun/img/image-20221003094527415.png" alt="image-20221003094527415"></p>
+<p><span style="color:red"><strong>多主机多硬盘</strong></span></p>
+<p>该模式是Minio服务最常用的架构，通过共享一个access_key和secret_key，在<strong>多台（2-32）服务器</strong>上搭建服务，且数据分散在<strong>多块（大于4块，无上限）磁盘</strong>上，提供了<strong>较为强大的数据冗余机制</strong>（Reed-Solomon纠删码）</p>
+<p><img src="http://qn.mfei.fun/img/image-20221003110718897.png" alt="image-20221003110718897"></p>
+<h3 id="数据传输方式"><a href="#数据传输方式" class="headerlink" title="数据传输方式"></a><span style="color:green">数据传输方式</span></h3><p>Minio 是一个基于Apache License v2.0开源协议的对象存储服务。它兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器&#x2F;虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p>
+<p><span style="color:green">Minio 除了直接作为对象存储使用，还可以作为云上对象存储服务的网关层，无缝对接到 Amazon S3、MicroSoft Azure</span></p>
+<h3 id="大文件传输方式"><a href="#大文件传输方式" class="headerlink" title="大文件传输方式"></a>大文件传输方式</h3><h2 id="分布式部署"><a href="#分布式部署" class="headerlink" title="分布式部署"></a>分布式部署</h2><p><span style="color:green">在大数据领域，通常的设计理念都是无中心和分布式。Minio分布式模式可以帮助你搭建一个高可用的对象存储服务，你可以使用这些存储设备，而不用考虑其真实物理位置。</span></p>
+<h3 id="分布式部署优势"><a href="#分布式部署优势" class="headerlink" title="分布式部署优势"></a>分布式部署优势</h3><ul>
+<li><p>数据保护</p>
+<blockquote>
+<p>分布式Minio采用<a href="http://docs.minio.org.cn/docs/master/minio-erasure-code-quickstart-guide">纠删码</a>来防范多个节点宕机和<a href="https://github.com/minio/minio/blob/master/docs/zh_CN/erasure/README.md#what-is-bit-rot-protection">位衰减<code>bit rot</code></a>。</p>
+<p>分布式Minio至少需要4个硬盘，<span style="color:red">使用分布式Minio自动引入了纠删码功能</span>。</p>
+</blockquote>
+</li>
+<li><p>高可用</p>
+<blockquote>
+<p>单机Minio服务存在单点故障，相反，如果是一个有N块硬盘的分布式Minio, 只要有N&#x2F;2硬盘在线，你的数据就是安全的。不过至少有N&#x2F;2+1个硬盘才能创建新的对象。例如，一个16节点的Minio集群，每个节点16块硬盘，就算8台服务器宕机，这个集群仍然是可读的，不过需要9台服务器才能写数据。只要遵守分布式Minio的限制，可以组合不同的节点和每个节点几块硬盘。</p>
+</blockquote>
+</li>
+<li><p>一致性</p>
+<blockquote>
+<p>Minio在分布式和单机模式下，所有读写操作都严格遵守<strong>先写后读</strong>（read-after-write）一致性模型。</p>
+</blockquote>
+</li>
+<li><p>数据高可靠</p>
+<blockquote>
+<p>Minio使用<strong>了Erasure Code 纠删码</strong>和 <strong>Bit Rot Protection 数据腐化保护</strong>这两个特性，所以MinIO的数据可靠性做的高。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="分布式部署方案"><a href="#分布式部署方案" class="headerlink" title="分布式部署方案"></a>分布式部署方案</h3><h2 id="文件修复"><a href="#文件修复" class="headerlink" title="文件修复"></a>文件修复</h2><p>MinIO提供了一个管理工具，可以对所有编码块进行校验，如果发现编码块有问题，再去修复它。</p>
+<p>得益于Reed-Solomon纠删码，Minio可以更加灵活的对文件进行修复。</p>
+<h3 id="修复方案"><a href="#修复方案" class="headerlink" title="修复方案"></a>修复方案</h3><p>目前，Minio提供了全量、bucket、文件夹、文件等各个粒度的修复操作：</p>
+<p>递归修复</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ mc admin heal -r myminio</span><br></pre></td></tr></table></figure>
+
+<p>指定桶修复</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ mc admin heal -r myminio/dev</span><br></pre></td></tr></table></figure>
+
+<p>相比一般的RAID方式，Minio可以在非常小的粒度下对文件进行修复操作，灵活性有了很大提高。</p>
+<p>修复后，可以JSON格式列出指定路径（文件、大小）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">mc <span class="built_in">ls</span> -r --json myminio/dev</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line"> &quot;status&quot;: &quot;success&quot;,</span><br><span class="line"> &quot;type&quot;: &quot;file&quot;,</span><br><span class="line"> &quot;lastModified&quot;: &quot;2019-05-30T09:43:07.763-04:00&quot;,</span><br><span class="line"> &quot;size&quot;: 44996289,</span><br><span class="line"> &quot;key&quot;: &quot;myFile&quot;,</span><br><span class="line"> &quot;etag&quot;: &quot;bae58dc18zzzzz54c14e233b520e0a&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Erasure-Code纠删码"><a href="#Erasure-Code纠删码" class="headerlink" title="Erasure Code纠删码"></a>Erasure Code纠删码</h3><p>纠删码（Erasure Code）简称EC，是一种数据保护方法，<span style="color:red">用以恢复丢失和损坏数据的数学算法</span>。它<span style="color:red">将数据分割成片段</span>，把<span style="color:red">冗余数据块扩展、编码</span>，并将其存储在不同的位置，比如磁盘、存储节点或者其它地理位置。从数据函数角度来说，纠删码提供的保护可以用下面这个简单的公式来表示：<span style="color:red">n &#x3D; k + m</span>。变量“k”代表原始数据或符号的值。变量“m”代表故障后添加的提供保护的额外或冗余符号的值。变量“n”代表纠删码过程后创建的符号的总值。<span style="color:red">磁盘数量&#x3D;重复原始文件+可损坏的检验块个数。</span></p>
+<p>举个例子，假设n&#x3D;16，代表有16块磁盘，另外，有10份原始文件一模一样，称为k，16 &#x3D; 10 +m，这个m就是可以恢复的校验块个数，所以m是6，任意6个不可用，原始文件都可以恢复，极端情况，10个原始文件坏掉6个，靠4个原始的加上6个校验块，可以把坏掉的6个原始文件恢复，这个用到数学行列式矩阵知识，不做展开。</p>
+<p>Minio采用Reed-Solomon code将对象拆分成N&#x2F;2<span style="color:red">数据</span>和N&#x2F;2 <span style="color:red">奇偶校验块</span>。 这就意味着如果是12块盘，一个对象会被分成6个数据块、6个奇偶校验块，可以丢失任意6块盘（不管其是存放的数据块还是奇偶校验块），仍可以从剩下的盘中的数据进行恢复。</p>
+<h3 id="Reed-Solomon-code"><a href="#Reed-Solomon-code" class="headerlink" title="Reed-Solomon code"></a>Reed-Solomon code</h3><p>Reed-Solomon 是纠删码的实现算法的一种，当然，也是一种恢复丢失和损坏数据的数学算法，minio 采用的是 Reed-Solomon算法。</p>
+<p><img src="http://qn.mfei.fun/img/[9%7D[3LE%7D0%60KQC4]6B%]X[5J.hc" alt="img"></p>
+<p>如上图，如我们所知，一个对象存储在一个Set上面，这个Set包含16个Drive，其中灰色的一半是数据块，橙色的一半是校验块，这种方式最多能忍受一半的编码丢失或损坏。所有编码块的大小是原对象的2倍，跟传统多副本存储方案相比，他只冗余存了一份，但可靠性更高（<span style="color:red">低冗余、高可靠</span>）。纠删码的工作原理和RAID或者副本不同，像RAID只能在损失两块盘，或者以下的情况下不丢数据，而Minio纠删码可以在丢失一半的盘的情况下，仍可以保证数据安全。而且Minio纠删码是作用在对象级别，可以一次恢复一个对象，而RAID是作用在卷级别，数据恢复时间很长。Minio对每个对象单独编码，存储服务一经部署，通常情况下是不需要更换硬盘或者修复。此外，针对不同应用所需的数据安全级别不同，Minio还提供了存储级别（Storage Class）的配置，调整数据块和校验块的比例，做到对空间的最佳使用。</p>
+<p><img src="http://qn.mfei.fun/img/image-20221003211104930.png" alt="image-20221003211104930"></p>
+<p>比如在将比例调整为14:2后，存储100M的数据占用的空间仅为114M。</p>
+<h3 id="Bit-Rot-Protection"><a href="#Bit-Rot-Protection" class="headerlink" title="Bit Rot Protection"></a>Bit Rot Protection</h3><p>直译就是腐烂。它只是<span style="color:red">物理设备上的一些文件细微的损坏，还没有被操作系统所硬件所察觉，但是他已经损坏了</span>。Bit Rot 位衰减又被称为<strong>数据腐化Data Rot</strong>、<strong>无声数据损坏Silent Data Corruption</strong>，位衰减可以理解为无形中的数据丢失——或者称为“Bit rot”, 是指<span style="color:red">物理存储介质的衰减所带来的隐患将凸显出来</span>。位衰减是目前硬盘数据的一种严重数据丢失问题。硬盘上的数据可能会神不知鬼不觉就损坏了，也没有什么错误日志，<span style="color:red">不但会导致数据丢失，还会导致RAID错误</span>。针对这一问题，最新的<span style="color:red">Minio采用了HighwayHash算法计算校验和来防范位衰减</span>，大致的做法是，MinIO把之前的编码块进行 HighwayHash 编码，最后要校验这个编码，以确保每个编码是正确的（该算法的数据恢复依靠的是对象编码后的<span style="color:red">矩阵</span>排列）。</p>
+]]></content>
+      <categories>
+        <category>项目</category>
+      </categories>
+      <tags>
+        <tag>大数据实训平台</tag>
+        <tag>数据众包</tag>
+        <tag>MinIO</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Lambda四大函数</title>
     <url>/2020/11/08/Lambda%E5%9B%9B%E5%A4%A7%E5%87%BD%E6%95%B0/</url>
     <content><![CDATA[<p>Lambda是一个<strong>匿名函数</strong>，可以把它理解为是一段可以传递的代码（将代码像数据一样进行传递）。</p>
@@ -257,83 +431,36 @@
       </tags>
   </entry>
   <entry>
-    <title>Minio简介</title>
-    <url>/2022/09/29/Minio%E7%AE%80%E4%BB%8B/</url>
-    <content><![CDATA[<p>Minio使用纠删码erasure code和校验和checksum。 即便丢失一半数量（N&#x2F;2）的硬盘，仍然可以恢复数据。</p>
-<p>Minio 是个基于 Golang 编写的开源对象存储套件，虽然轻量，却拥有着不错的性能</p>
-<h3 id="数据传输方式"><a href="#数据传输方式" class="headerlink" title="数据传输方式"></a><span style="color:green">数据传输方式</span></h3><p>Minio 是一个基于Apache License v2.0开源协议的对象存储服务。它兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器&#x2F;虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p>
-<h3 id="大文件传输方式"><a href="#大文件传输方式" class="headerlink" title="大文件传输方式"></a>大文件传输方式</h3><p>分片上传</p>
-<h3 id="文件修复方案"><a href="#文件修复方案" class="headerlink" title="文件修复方案"></a>文件修复方案</h3><p>MinIO 使用 <strong>纠删码和校验和 机制来保证高可靠性，即便丢失一半数量 (N&#x2F;2)的硬盘，仍然可以恢复数据</strong>。 纠删码是一种恢复丢失和损坏数据的数学算法， MinIO 采用 Reed-Solomon code 将对象拆分成 N&#x2F;2 数据和 N&#x2F;2 奇偶校验块。</p>
-<h3 id="分布式部署"><a href="#分布式部署" class="headerlink" title="分布式部署"></a>分布式部署</h3><p><span style="color:red"><strong>单主机单硬盘</strong></span></p>
-<p><span style="color:red"><strong>单主机多硬盘</strong></span></p>
-<p><span style="color:red"><strong>多主机多硬盘</strong></span></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>Nginx配置信息</title>
-    <url>/2020/09/15/Nginx%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF/</url>
-    <content><![CDATA[<p>在nginx的文件目录<code>etc/nginx</code>下，有一个<code>nginx.conf</code>文件和一个<code>conf.d</code>文件夹。</p>
-<h2 id="nginx-conf文件"><a href="#nginx-conf文件" class="headerlink" title="nginx.conf文件"></a><a href="https://so.csdn.net/so/search?q=nginx&spm=1001.2101.3001.7020">nginx</a>.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">user  nginx;</span><br><span class="line">worker_processes  auto;</span><br><span class="line"></span><br><span class="line">error_log  /var/log/nginx/error.log notice;</span><br><span class="line">pid        /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <title>startup.bat启动Tomcat闪退问题原因及解决</title>
+    <url>/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/</url>
+    <content><![CDATA[<h3 id="出现问题"><a href="#出现问题" class="headerlink" title="出现问题"></a>出现问题</h3><p>安装了Tomcat之后，开始用着还好好的。<code>莫名其妙</code>的就很突然出现了一些玄学问题，某一次开始我双击了<code>startup.bat</code>启动Tomcat时我的黑窗口就很不给面子的运行着运行着就<code>闪退</code>了，隐约间能看到个异常，可刚看清楚一个<code>caused by...</code>黑窗口就已经关闭了。经历了重启电脑等常规解决问题的思路后依旧无法解决。</p>
+<h3 id="分析问题"><a href="#分析问题" class="headerlink" title="分析问题"></a>分析问题</h3><p>既然问题出现在这个启动后闪退，那就去看一眼启动时都做了什么？用记事本打开<code>startup.bat</code>，会发现一行脚本是这样写的：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">set &quot;EXECUTABLE=%CATALINA_HOME%\bin\catalina.bat&quot;</span><br></pre></td></tr></table></figure>
 
-<p>从这个配置文件看得出以下信息：</p>
-<ul>
-<li>日志位置：&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log</li>
-<li>最大连接数（默认）：1024</li>
-<li><code>文件引入断言：/etc/nginx/conf.d/*.conf</code></li>
-</ul>
-<h2 id="conf-d文件夹"><a href="#conf-d文件夹" class="headerlink" title="conf.d文件夹"></a>conf.d文件夹</h2><ul>
-<li>在该文件夹下有一个<code>default.conf</code>文件为nginx默认配置</li>
-<li>根据<code>nginx.conf</code>文件中的配置断言看得出，自定义配置也应当放在<code>conf.d</code>文件夹中</li>
-</ul>
-<h2 id="default-conf文件"><a href="#default-conf文件" class="headerlink" title="default.conf文件"></a>default.conf文件</h2><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    listen  [::]:80;</span><br><span class="line">    server_name  localhost;</span><br><span class="line"></span><br><span class="line">    #access_log  /var/log/nginx/host.access.log  main;</span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #error_page  404              /404.html;</span><br><span class="line"></span><br><span class="line">    # redirect server error pages to the static page /50x.html</span><br><span class="line">    #</span><br><span class="line">    error_page   500 502 503 504  /50x.html;</span><br><span class="line">    location = /index.html &#123;</span><br><span class="line">        root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    # proxy the PHP scripts to Apache listening on 127.0.0.1:80</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    proxy_pass   http://127.0.0.1;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000</span><br><span class="line">    #</span><br><span class="line">    #location ~ \.php$ &#123;</span><br><span class="line">    #    root           html;</span><br><span class="line">    #    fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">    #    fastcgi_index  index.php;</span><br><span class="line">    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;</span><br><span class="line">    #    include        fastcgi_params;</span><br><span class="line">    #&#125;</span><br><span class="line"></span><br><span class="line">    # deny access to .htaccess files, if Apache&#x27;s document root</span><br><span class="line">    # concurs with nginx&#x27;s one</span><br><span class="line">    #</span><br><span class="line">    #location ~ /\.ht &#123;</span><br><span class="line">    #    deny  all;</span><br><span class="line">    #&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看得出它访问了本目录下的<code>catalina.bat</code>脚本，那就记事本打开<code>catalina.bat</code>，此时又发现里面出现了这些内容：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">rem Get standard Java environment variables</span><br><span class="line">if exist &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; goto okSetclasspath</span><br><span class="line">echo Cannot find &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot;</span><br><span class="line">echo This file is needed to run this program</span><br><span class="line">goto end</span><br><span class="line">:okSetclasspath</span><br><span class="line">call &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; %1</span><br><span class="line">if errorlevel 1 goto end</span><br></pre></td></tr></table></figure>
 
-<p>至此结合<code>nginx.conf</code>文件和<code>default.conf</code>文件不难看出nginx的配置结构为以下这种情况：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">#全局块</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">#events块</span><br><span class="line">events &#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#http块</span><br><span class="line">http</span><br><span class="line">&#123;</span><br><span class="line">	#http全局块</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    #server块</span><br><span class="line">    server</span><br><span class="line">    &#123; </span><br><span class="line">    	#server全局块</span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">		#location块</span><br><span class="line">        location [PATTERN]</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        location [PATTERN] </span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server</span><br><span class="line">    &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    #http全局块</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这说明<code>catalina.bat</code>又访问了该目录下的<code>setclasspath.bat</code>，而记事本打开<code>setclasspath.bat</code>后又发现它又访问了<code>catalina.bat</code>。</p>
+<hr/>
 
-<ul>
-<li>全局块：配置影响nginx全局的指令。一般有运行nginx服务器的用户组，nginx进程pid存放路径，日志存放路径，配置文件引入，允许生成worker process数等。</li>
-<li>events块：配置影响nginx服务器或与用户的网络连接。有每个进程的最大连接数，选取哪种事件驱动模型处理连接请求，是否允许同时接受多个网路连接，开启多个网络连接序列化等。</li>
-<li>http块：可以嵌套多个server，配置代理，缓存，日志定义等绝大多数功能和第三方模块的配置。如文件引入，mime-type定义，日志自定义，是否使用sendfile传输文件，连接超时时间，单连接请求数等。</li>
-<li>server块：配置虚拟主机的相关参数，一个http中可以有多个server</li>
-<li>location块：配置请求的路由，以及各种页面的处理情况。</li>
-</ul>
-<h2 id="配置server块"><a href="#配置server块" class="headerlink" title="配置server块"></a>配置server块</h2><p>我们在部署项目时最常配置的就是如default.conf文件所示的server块的配置。基本就是<code>监听一个端口</code>，当请求nginx主机ip+端口时自然就进入了监听该端口的server；<code>监听一个地址</code>，该地址为当前server服务所在地址；<code>对请求路由</code>，即对请求的URL进行过滤匹配，访问具体的静态资源或服务。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>路由静态资源</strong><br>当请求静态资源时，路由方式如下（因为nginx首页内容即为前端静态资源，故此出以default.nginx对首页资源的路由举例）：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    root   /usr/share/nginx/html/nginx_reload;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>路由服务地址</strong><br>当请求后端服务时，路由方式如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">upstream myserver&#123;</span><br><span class="line">    server 172.17.0.4:8000;</span><br><span class="line">    server 172.17.0.5:8000;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /api &#123;</span><br><span class="line">   proxy_pass http://myserver;</span><br><span class="line">   index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="root与alias"><a href="#root与alias" class="headerlink" title="root与alias"></a>root与alias</h2><p><strong>root</strong><br>root是用来指定访问资源的文件路径的，nginx会<code>将root的值和location的值进行拼接</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
-<figure class="highlight plaintext"><figcaption><span>/login/&#123;</span></figcaption><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    root    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>访问结果如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/login/index.html</span><br><span class="line">/login/b --&gt; /usr/local/login/b/index.html</span><br></pre></td></tr></table></figure>
-
-<p><strong>alias</strong><br>alias也是用来指定访问资源的文件路径的，但是nginx会<code>将alias的值替换location的值</code>，然后<code>再拼接上url剩余的部分及index指定的值</code>。</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>访问结果如下：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">/login --&gt; /usr/local/index.html</span><br><span class="line">/login/b --&gt; /usr/local/b/index.html</span><br></pre></td></tr></table></figure>
-
-<p>另外：alias指定的是文件夹路径，不能直接指定到具体的文件，否则会500，例如</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location /login/&#123;</span><br><span class="line">    alias    /usr/local/index.html;</span><br><span class="line">    #index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">这种配置会让nginx报出500</span><br></pre></td></tr></table></figure>
-
-<p>注意：<code>使用alias的时候，url后面如果加了斜杠，则下面的路径必须也加斜杠，否则403</code>。<br><strong>index</strong><br>index就是用来指定具体的资源的名字的，index可以指定多个资源的名字，第一个匹配不到，就会匹配第二个，直到匹配到为止。但是<code>location使用严格匹配的时候（加了个等于号），不能使用index，否则会导致root失效</code>，如：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">location =/login/&#123;</span><br><span class="line">    root    /usr/local/;</span><br><span class="line">    index    index.html;</span><br><span class="line">&#125;</span><br><span class="line">当访问的url为/login/时，实际访问的资源为：nginx的默认document_root/login/index.html，使得root失效，值得注意的是nginx的默认document_root和我们root指定的是不一样的，所以最后会404</span><br></pre></td></tr></table></figure>
-
-<p><strong>常见配置</strong></p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">########### 每个指令必须有分号结束。#################</span><br><span class="line">#user administrator administrators;  #配置用户或者组，默认为nobody nobody。</span><br><span class="line">#worker_processes 2;  #允许生成的进程数，默认为1</span><br><span class="line">#pid /nginx/pid/nginx.pid;   #指定nginx进程运行文件存放地址</span><br><span class="line">error_log log/error.log debug;  #制定日志路径，级别。这个设置可以放入全局块，http块，server块，级别以此为：debug|info|notice|warn|error|crit|alert|emerg</span><br><span class="line">events &#123;</span><br><span class="line">    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on</span><br><span class="line">    multi_accept on;  #设置一个进程是否同时接受多个网络连接，默认为off</span><br><span class="line">    #use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport</span><br><span class="line">    worker_connections  1024;    #最大连接数，默认为512</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;   #文件扩展名与文件类型映射表</span><br><span class="line">    default_type  application/octet-stream; #默认文件类型，默认为text/plain</span><br><span class="line">    #access_log off; #取消服务日志    </span><br><span class="line">    log_format myFormat &#x27;$remote_addr–$remote_user [$time_local] $request $status $body_bytes_sent $http_referer $http_user_agent $http_x_forwarded_for&#x27;; #自定义格式</span><br><span class="line">    access_log log/access.log myFormat;  #combined为日志格式的默认值</span><br><span class="line">    sendfile on;   #允许sendfile方式传输文件，默认为off，可以在http块，server块，location块。</span><br><span class="line">    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。</span><br><span class="line">    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。</span><br><span class="line"></span><br><span class="line">    upstream mysvr &#123;   </span><br><span class="line">      server 127.0.0.1:7878;</span><br><span class="line">      server 192.168.10.121:3333 backup;  #热备</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 https://www.baidu.com; #错误页</span><br><span class="line">    server &#123;</span><br><span class="line">        keepalive_requests 120; #单连接请求上限次数。</span><br><span class="line">        listen       4545;   #监听端口</span><br><span class="line">        server_name  127.0.0.1;   #监听地址       </span><br><span class="line">        location  ~*^.+$ &#123;       #请求的url过滤，正则匹配，~为区分大小写，~*为不区分大小写。</span><br><span class="line">           #root path;  #根目录</span><br><span class="line">           #index vv.txt;  #设置默认页</span><br><span class="line">           proxy_pass  http://mysvr;  #请求转向mysvr 定义的服务器列表</span><br><span class="line">           deny 127.0.0.1;  #拒绝的ip</span><br><span class="line">           allow 172.18.5.54; #允许的ip           </span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<p>综上发现<code>startup.bat启动流程</code>为：<code>startup-&gt;catalina-&gt;setclasspath-&gt;catalina</code></p>
+<p><img src="http://qn.mfei.fun/img/QQH2E%7B7[T[W9X%L@PK%7B1RFD.hc" alt="img"></p>
+<h3 id="闪退原因："><a href="#闪退原因：" class="headerlink" title="闪退原因："></a>闪退原因：</h3><p>可见这三个文件一个都不能出问题。分析这三个文件得出闪退问题主要原因</p>
+<h4 id="原因一：java环境变量出问题了"><a href="#原因一：java环境变量出问题了" class="headerlink" title="原因一：java环境变量出问题了"></a>原因一：java<a href="https://so.csdn.net/so/search?q=%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F&spm=1001.2101.3001.7020">环境变量</a>出问题了</h4><p>从启动脚本中看得出Tomcat多次访问了环境变量信息，其中也包括java环境（毕竟Tomcat原码也是java啊）。故要先去<code>检查jdk的环境配置</code>。</p>
+<p><strong>注意：</strong><code>CATALINA_HOME</code>是Tomcat的环境，你可以选择不配置，不过这样的话你就只能在bin目录下启动Tomcat了，换句话来讲，配置完Tomcat环境后你可以把<code>startup.bat</code>复制到其他地方双击启动。</p>
+<h4 id="原因二：端口占用"><a href="#原因二：端口占用" class="headerlink" title="原因二：端口占用"></a>原因二：端口占用</h4><p>如果Tomcat已经被启动或者8080端口被占用，这自然是不允许的。</p>
+<p>你可以直接访问<code>localhost:8080</code>看能否访问Tomcat，如果可以那就说明是已经开启过了的，你可以双击<code>shutdown.bat</code>进行关闭。</p>
+<p>或者你可以在黑窗口中执行<code>netstat -ano | findstr &quot;8080&quot;</code>查看8080端口状态，如果是<code>TIME_WAIT</code>则说明未被占用。</p>
+<h4 id="原因三：你的Tomcat不干净了"><a href="#原因三：你的Tomcat不干净了" class="headerlink" title="原因三：你的Tomcat不干净了"></a>原因三：你的Tomcat不干净了</h4><p>到现在还没解决，那就有可能是你所下载的Tomcat是一些<code>绿色版、无敌版、xx版</code>等阉货或畸形货。此时就可在记事本打开<code>startup.bat</code>，在脚本最后面一行加上<code>pause</code>，保存后启动进行断点调试了。（不一定非得像我图片中加在倒数第二行，最后一行应该也可以，只要不放在前面的逻辑中就行）。</p>
+<p><img src="http://qn.mfei.fun/img/@UTBWFW8Z3]27P7OU7%FXQW.hc" alt="img"></p>
+<p>此时启动效果和之前没有区别，只是出了问题后不再会立刻闪退，而是你在窗口中按任意键后才会退出。OK！现在你就研究属于你的bug吧（记得解决完问题后把pause删掉）！</p>
 ]]></content>
       <categories>
-        <category>运维</category>
+        <category>web开发</category>
       </categories>
       <tags>
         <tag>服务器</tag>
-        <tag>Nginx</tag>
+        <tag>tomcat</tag>
       </tags>
   </entry>
   <entry>
@@ -361,39 +488,6 @@
 <p><img src="http://qn.mfei.fun/img/image-20220919145629935.png" alt="image-20220919145629935"></p>
 <h4 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h4><p>在解决此问题时尽可能不要改动jdk版本。另外为了避免不必要麻烦，<code>项目中的web.xml头文件尽可能和Tomcat保持一致</code>：</p>
 <figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--此处为Tomcat9.0.54版本--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="string"><span class="tag">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">&quot;4.0&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>web开发</category>
-      </categories>
-      <tags>
-        <tag>服务器</tag>
-        <tag>tomcat</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>startup.bat启动Tomcat闪退问题原因及解决</title>
-    <url>/2020/09/29/startup.bat%E5%90%AF%E5%8A%A8Tomcat%E9%97%AA%E9%80%80%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3/</url>
-    <content><![CDATA[<h3 id="出现问题"><a href="#出现问题" class="headerlink" title="出现问题"></a>出现问题</h3><p>安装了Tomcat之后，开始用着还好好的。<code>莫名其妙</code>的就很突然出现了一些玄学问题，某一次开始我双击了<code>startup.bat</code>启动Tomcat时我的黑窗口就很不给面子的运行着运行着就<code>闪退</code>了，隐约间能看到个异常，可刚看清楚一个<code>caused by...</code>黑窗口就已经关闭了。经历了重启电脑等常规解决问题的思路后依旧无法解决。</p>
-<h3 id="分析问题"><a href="#分析问题" class="headerlink" title="分析问题"></a>分析问题</h3><p>既然问题出现在这个启动后闪退，那就去看一眼启动时都做了什么？用记事本打开<code>startup.bat</code>，会发现一行脚本是这样写的：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">set &quot;EXECUTABLE=%CATALINA_HOME%\bin\catalina.bat&quot;</span><br></pre></td></tr></table></figure>
-
-<p>看得出它访问了本目录下的<code>catalina.bat</code>脚本，那就记事本打开<code>catalina.bat</code>，此时又发现里面出现了这些内容：</p>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">rem Get standard Java environment variables</span><br><span class="line">if exist &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; goto okSetclasspath</span><br><span class="line">echo Cannot find &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot;</span><br><span class="line">echo This file is needed to run this program</span><br><span class="line">goto end</span><br><span class="line">:okSetclasspath</span><br><span class="line">call &quot;%CATALINA_HOME%\bin\setclasspath.bat&quot; %1</span><br><span class="line">if errorlevel 1 goto end</span><br></pre></td></tr></table></figure>
-
-<p>这说明<code>catalina.bat</code>又访问了该目录下的<code>setclasspath.bat</code>，而记事本打开<code>setclasspath.bat</code>后又发现它又访问了<code>catalina.bat</code>。</p>
-<hr/>
-
-<p>综上发现<code>startup.bat启动流程</code>为：<code>startup-&gt;catalina-&gt;setclasspath-&gt;catalina</code></p>
-<p><img src="http://qn.mfei.fun/img/QQH2E%7B7[T[W9X%L@PK%7B1RFD.hc" alt="img"></p>
-<h3 id="闪退原因："><a href="#闪退原因：" class="headerlink" title="闪退原因："></a>闪退原因：</h3><p>可见这三个文件一个都不能出问题。分析这三个文件得出闪退问题主要原因</p>
-<h4 id="原因一：java环境变量出问题了"><a href="#原因一：java环境变量出问题了" class="headerlink" title="原因一：java环境变量出问题了"></a>原因一：java<a href="https://so.csdn.net/so/search?q=%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F&spm=1001.2101.3001.7020">环境变量</a>出问题了</h4><p>从启动脚本中看得出Tomcat多次访问了环境变量信息，其中也包括java环境（毕竟Tomcat原码也是java啊）。故要先去<code>检查jdk的环境配置</code>。</p>
-<p><strong>注意：</strong><code>CATALINA_HOME</code>是Tomcat的环境，你可以选择不配置，不过这样的话你就只能在bin目录下启动Tomcat了，换句话来讲，配置完Tomcat环境后你可以把<code>startup.bat</code>复制到其他地方双击启动。</p>
-<h4 id="原因二：端口占用"><a href="#原因二：端口占用" class="headerlink" title="原因二：端口占用"></a>原因二：端口占用</h4><p>如果Tomcat已经被启动或者8080端口被占用，这自然是不允许的。</p>
-<p>你可以直接访问<code>localhost:8080</code>看能否访问Tomcat，如果可以那就说明是已经开启过了的，你可以双击<code>shutdown.bat</code>进行关闭。</p>
-<p>或者你可以在黑窗口中执行<code>netstat -ano | findstr &quot;8080&quot;</code>查看8080端口状态，如果是<code>TIME_WAIT</code>则说明未被占用。</p>
-<h4 id="原因三：你的Tomcat不干净了"><a href="#原因三：你的Tomcat不干净了" class="headerlink" title="原因三：你的Tomcat不干净了"></a>原因三：你的Tomcat不干净了</h4><p>到现在还没解决，那就有可能是你所下载的Tomcat是一些<code>绿色版、无敌版、xx版</code>等阉货或畸形货。此时就可在记事本打开<code>startup.bat</code>，在脚本最后面一行加上<code>pause</code>，保存后启动进行断点调试了。（不一定非得像我图片中加在倒数第二行，最后一行应该也可以，只要不放在前面的逻辑中就行）。</p>
-<p><img src="http://qn.mfei.fun/img/@UTBWFW8Z3]27P7OU7%FXQW.hc" alt="img"></p>
-<p>此时启动效果和之前没有区别，只是出了问题后不再会立刻闪退，而是你在窗口中按任意键后才会退出。OK！现在你就研究属于你的bug吧（记得解决完问题后把pause删掉）！</p>
-]]></content>
       <categories>
         <category>web开发</category>
       </categories>
@@ -442,6 +536,124 @@
       </categories>
       <tags>
         <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>众包平台设计</title>
+    <url>/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</url>
+    <content><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p>
+<p>线上获取：直接访问受信任的三方或私人数据集</p>
+<h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p>
+<p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p>
+<p><strong>LeoFS：</strong>不是很可控，可控性差</p>
+<p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p>
+<p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p>
+<p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p>
+<p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p>
+<p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p>
+<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p>
+<h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p>
+<p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p>
+<p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p>
+<p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p>
+<p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p>
+<p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p>
+<h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul>
+<li><p>数据集的标注信息是保存在mysql当中的。</p>
+<ul>
+<li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li>
+<li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li>
+</ul>
+</li>
+<li><p>具体的数据集所对应的标注信息是在下载时生成的。</p>
+<ul>
+<li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li>
+<li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li>
+<li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li>
+<li>下载时生成保证了标注信息的准确性和实时性</li>
+</ul>
+</li>
+<li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p>
+<ul>
+<li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li>
+</ul>
+</li>
+<li><p>频繁请求标注信息下载怎么办</p>
+</li>
+</ul>
+<h3 id="组织下载"><a href="#组织下载" class="headerlink" title="组织下载"></a>组织下载</h3><ul>
+<li><p>数据集下载：直接将数据集所在MinIo中的URL返回给前端</p>
+</li>
+<li><p>标注信息下载</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [文件<span class="number">1</span>地址, 文件<span class="number">2</span>地址...],</span><br><span class="line">    <span class="string">&quot;文件1名称:标注信息</span></span><br><span class="line"><span class="string">     文件2名称:标注信息</span></span><br><span class="line"><span class="string">     ...&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><ul>
+<li>查询私有数据集未标注的数据量</li>
+<li>一次可分配一组标注任务（每组标注任务有共同的组别标识）</li>
+</ul>
+<h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><p>平台使用者可在众包中心接单标注任务</p>
+<h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><p>标注任务完成后可提交审核，由任务发布者进行审核</p>
+<h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><ul>
+<li><p>分享数据集下载地址</p>
+</li>
+<li><p>直接下载数据集</p>
+</li>
+<li><p>在算法建模模块直接引用数据集</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>项目</category>
+      </categories>
+      <tags>
+        <tag>大数据实训平台</tag>
+        <tag>数据众包</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>枚举类使用场景</title>
+    <url>/2020/10/20/%E6%9E%9A%E4%B8%BE%E7%B1%BB%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/</url>
+    <content><![CDATA[<h2 id="枚举（enum）"><a href="#枚举（enum）" class="headerlink" title="枚举（enum）"></a><a href="https://so.csdn.net/so/search?q=%E6%9E%9A%E4%B8%BE&spm=1001.2101.3001.7020">枚举</a>（enum）</h2><p><strong>前言：</strong><br>初次学习，本人更注重<code>实用性</code>。许多文章都对枚举类进行了很详细的介绍，比如它是jdk1.5后引入的新特性、继承了 java.lang.<a href="https://so.csdn.net/so/search?q=Enum&spm=1001.2101.3001.7020">Enum</a>类等，在此就不多阐述。本文重点解释<code>枚举类的字段</code>，以及一些<code>枚举类的使用场景</code>。</p>
+<p><strong>枚举类的理解：</strong></p>
+<ol>
+<li>所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。</li>
+<li>当需要定义一组常量时，强烈建议使用枚举类。</li>
+<li>如果枚举类中只有一个对象，则可以作为单列模式的实现方式。</li>
+</ol>
+<p>看完后是不是很懵逼？不慌，这些是别人文章中千篇一律的东西，本文中这些东西不会是重点。</p>
+<hr>
+
+<p><strong>如何写一个枚举类？</strong></p>
+<p>jdk5.0之前，我们要自定义枚举类，jdk5.0，可以使用<code>enum</code>关键字定义枚举类。还是那句话，初次学习，我更注重应用。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ColorEnum</span>&#123;</span><br><span class="line">	<span class="comment">//一个枚举类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>我们常见的枚举类里的那些看不懂的东西：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED,</span><br><span class="line">    GREEN,</span><br><span class="line">    PINK,</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//执行结果为：</span></span><br><span class="line"><span class="comment">//RED</span></span><br></pre></td></tr></table></figure>
+
+<p>先说说这几个<code>字段</code>（RED、GREEN、PINK）是啥。你以为它们是常量？好吧，开始我也这么以为，比如“Colors.RED”，是不是很像是通过类名访问静态变量？可它的输出结果又，，，，，最终我发现用<code>枚举类对象</code>形容它们更合适。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes());<span class="comment">//此处GREEN相当于一个枚举类对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是RED对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从以上代码中的三个颜色的字段我们可以理解 <strong>“所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。”</strong> 这句话了。<br>那么问题又来了，<code>这些字段如何去用呢</code>？</p>
+<ol>
+<li><p>字段配合抽象方法使用(<code>抽象方法一经定义，所有字段必须实现</code>)。同时字段中也可以（只能）重写枚举类中的普通方法（<code>字段中不能写枚举类中不存在的新的方法</code>）。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes2());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">	GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是对抽象类中方法的重写&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;这是enum自己的方法&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>字段配合构造器使用。可用于前后端分离时，为前端<code>返回状态码</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED.getColor());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span> &#123;</span><br><span class="line">    RED(<span class="string">&quot;red&quot;</span>,<span class="string">&quot;这是红色&quot;</span>) &#123;&#125;,</span><br><span class="line">    PINK(<span class="string">&quot;pink&quot;</span>,<span class="string">&quot;这是粉色&quot;</span>) &#123;&#125;,</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String color;</span><br><span class="line">    <span class="keyword">private</span> String describe;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Colors</span><span class="params">(String color, String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getColor</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setColor</span><span class="params">(String color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getDescribe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDescribe</span><span class="params">(String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="枚举的内存占用问题"><a href="#枚举的内存占用问题" class="headerlink" title="枚举的内存占用问题"></a>枚举的内存占用问题</h2><p><a href="https://blog.csdn.net/vfush/article/details/79881818?ops_request_misc=&request_id=&biz_id=102&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-79881818.nonecase">参考文章</a>,个人感觉这一篇就已经写的很详细了，在此推荐一下。<br>关于内存问题总结如下：</p>
+<ol>
+<li>可通过一些反编译手段，比如黑窗口中javap -p ***.class 命令，或者jad工具，推荐后者。</li>
+<li>枚举类是一个继承java.lang.Enum的final类，它的成员变量也是final常量。</li>
+<li>我们定义的枚举，编译器会将其转换成一个类（这就是说为什么枚举本身就是一个类），编译器还会帮我们生成多个枚举类的实例，赋值给我们定义的枚举类型常量，并且还声明了一个枚举对象的数组，保存了所有的枚举对象。<a href="https://blog.csdn.net/xiao_nian/article/details/80002101?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522160834401016780304676548%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=160834401016780304676548&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-80002101.nonecase&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98">参考博客</a></li>
+</ol>
+<p><strong>对于枚举的常用方法啥的，在此就不一一解释了，相信大多数博客中都有介绍。</strong></p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>Enum</tag>
       </tags>
   </entry>
   <entry>
@@ -513,52 +725,6 @@
       <tags>
         <tag>支付宝</tag>
         <tag>支付</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>枚举类使用场景</title>
-    <url>/2020/10/20/%E6%9E%9A%E4%B8%BE%E7%B1%BB%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/</url>
-    <content><![CDATA[<h2 id="枚举（enum）"><a href="#枚举（enum）" class="headerlink" title="枚举（enum）"></a><a href="https://so.csdn.net/so/search?q=%E6%9E%9A%E4%B8%BE&spm=1001.2101.3001.7020">枚举</a>（enum）</h2><p><strong>前言：</strong><br>初次学习，本人更注重<code>实用性</code>。许多文章都对枚举类进行了很详细的介绍，比如它是jdk1.5后引入的新特性、继承了 java.lang.<a href="https://so.csdn.net/so/search?q=Enum&spm=1001.2101.3001.7020">Enum</a>类等，在此就不多阐述。本文重点解释<code>枚举类的字段</code>，以及一些<code>枚举类的使用场景</code>。</p>
-<p><strong>枚举类的理解：</strong></p>
-<ol>
-<li>所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。</li>
-<li>当需要定义一组常量时，强烈建议使用枚举类。</li>
-<li>如果枚举类中只有一个对象，则可以作为单列模式的实现方式。</li>
-</ol>
-<p>看完后是不是很懵逼？不慌，这些是别人文章中千篇一律的东西，本文中这些东西不会是重点。</p>
-<hr>
-
-<p><strong>如何写一个枚举类？</strong></p>
-<p>jdk5.0之前，我们要自定义枚举类，jdk5.0，可以使用<code>enum</code>关键字定义枚举类。还是那句话，初次学习，我更注重应用。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ColorEnum</span>&#123;</span><br><span class="line">	<span class="comment">//一个枚举类</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>我们常见的枚举类里的那些看不懂的东西：</strong></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED,</span><br><span class="line">    GREEN,</span><br><span class="line">    PINK,</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//执行结果为：</span></span><br><span class="line"><span class="comment">//RED</span></span><br></pre></td></tr></table></figure>
-
-<p>先说说这几个<code>字段</code>（RED、GREEN、PINK）是啥。你以为它们是常量？好吧，开始我也这么以为，比如“Colors.RED”，是不是很像是通过类名访问静态变量？可它的输出结果又，，，，，最终我发现用<code>枚举类对象</code>形容它们更合适。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes());<span class="comment">//此处GREEN相当于一个枚举类对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">    RED&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是RED对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>从以上代码中的三个颜色的字段我们可以理解 <strong>“所谓枚举类，即类的对象只有有限个，确定的。我们称此类为枚举类。”</strong> 这句话了。<br>那么问题又来了，<code>这些字段如何去用呢</code>？</p>
-<ol>
-<li><p>字段配合抽象方法使用(<code>抽象方法一经定义，所有字段必须实现</code>)。同时字段中也可以（只能）重写枚举类中的普通方法（<code>字段中不能写枚举类中不存在的新的方法</code>）。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.GREEN.tes2());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span>&#123;</span><br><span class="line">	GREEN&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是GREEN对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是对抽象类中方法的重写&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    PINK&#123;</span><br><span class="line">        <span class="keyword">public</span> String <span class="title function_">tes</span><span class="params">()</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;这是PINK对抽象方法的实现&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    ;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title function_">tes</span><span class="params">()</span>;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">tes2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;这是enum自己的方法&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>字段配合构造器使用。可用于前后端分离时，为前端<code>返回状态码</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EnumTest3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(Colors.RED.getColor());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">Colors</span> &#123;</span><br><span class="line">    RED(<span class="string">&quot;red&quot;</span>,<span class="string">&quot;这是红色&quot;</span>) &#123;&#125;,</span><br><span class="line">    PINK(<span class="string">&quot;pink&quot;</span>,<span class="string">&quot;这是粉色&quot;</span>) &#123;&#125;,</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String color;</span><br><span class="line">    <span class="keyword">private</span> String describe;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">Colors</span><span class="params">(String color, String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getColor</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setColor</span><span class="params">(String color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getDescribe</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> describe;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDescribe</span><span class="params">(String describe)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.describe = describe;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<h2 id="枚举的内存占用问题"><a href="#枚举的内存占用问题" class="headerlink" title="枚举的内存占用问题"></a>枚举的内存占用问题</h2><p><a href="https://blog.csdn.net/vfush/article/details/79881818?ops_request_misc=&request_id=&biz_id=102&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-0-79881818.nonecase">参考文章</a>,个人感觉这一篇就已经写的很详细了，在此推荐一下。<br>关于内存问题总结如下：</p>
-<ol>
-<li>可通过一些反编译手段，比如黑窗口中javap -p ***.class 命令，或者jad工具，推荐后者。</li>
-<li>枚举类是一个继承java.lang.Enum的final类，它的成员变量也是final常量。</li>
-<li>我们定义的枚举，编译器会将其转换成一个类（这就是说为什么枚举本身就是一个类），编译器还会帮我们生成多个枚举类的实例，赋值给我们定义的枚举类型常量，并且还声明了一个枚举对象的数组，保存了所有的枚举对象。<a href="https://blog.csdn.net/xiao_nian/article/details/80002101?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522160834401016780304676548%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=160834401016780304676548&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-80002101.nonecase&utm_term=%E6%9E%9A%E4%B8%BE%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%A0%E5%86%85%E5%AD%98">参考博客</a></li>
-</ol>
-<p><strong>对于枚举的常用方法啥的，在此就不一一解释了，相信大多数博客中都有介绍。</strong></p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>Enum</tag>
       </tags>
   </entry>
   <entry>
@@ -789,78 +955,6 @@
       <tags>
         <tag>支付</tag>
         <tag>微信</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>众包平台设计</title>
-    <url>/2022/09/28/%E4%BC%97%E5%8C%85%E5%B9%B3%E5%8F%B0%E8%AE%BE%E8%AE%A1/</url>
-    <content><![CDATA[<h2 id="数据是如何管理的"><a href="#数据是如何管理的" class="headerlink" title="数据是如何管理的"></a>数据是如何管理的</h2><h3 id="数据获取途径"><a href="#数据获取途径" class="headerlink" title="数据获取途径"></a>数据获取途径</h3><p>用户本地上传文件：文本、图片（目前仅开放对文本和图片资源的标注）</p>
-<p>线上获取：直接访问受信任的三方或私人数据集</p>
-<h3 id="如何存储数据"><a href="#如何存储数据" class="headerlink" title="如何存储数据"></a>如何存储数据</h3><p>对于众包平台而言，数据集存储是一个比较值得关注的问题，通过调研目前已有的开源框架得出以下结论：</p>
-<p><strong>Ambry、MogileFS、FastFS：</strong>不能自定义对象名</p>
-<p><strong>LeoFS：</strong>不是很可控，可控性差</p>
-<p><strong>ceph：</strong>比较强大的分布式存储，但系统非常复杂需要大量的人力进行维护</p>
-<p><strong>TFS：</strong>淘宝开源，少有人维护，不活跃</p>
-<p><strong>GlusterFS：</strong>本身是一个非常成熟的对象存储的方案，2011年左右被收购了，他们原版人马又做了另外一个存储系统MINIO</p>
-<p><strong>MINIO：</strong>文档非常详细、具体，再加上他们之前在存储方面有十几年的经验，所以就这样打动了探探团队，作为选型的标的</p>
-<p><span style="color:red">考虑到自定义存储对象名等需求以及学习成本，最终系统采用MinIO进行对象存储。</span></p>
-<h2 id="数据是如何标注的"><a href="#数据是如何标注的" class="headerlink" title="数据是如何标注的"></a>数据是如何标注的</h2><h3 id="标注前是否清洗数据"><a href="#标注前是否清洗数据" class="headerlink" title="标注前是否清洗数据"></a>标注前是否清洗数据</h3><p>一般来讲在进行数据标注之前，我们首先要对数据进行清洗，去除无效的数据、整理成规整的格式等等，进而得到符合我们要求的数据。但考虑到该平台数据来源为用户根据需求自主上传或是直接获取现有数据集，数据自身规范程度较高，且数据集数据均为用户自用（公共数据集除外）。综上考虑无需特别设置数据清洗相关操作，但是在用户标注时提供了一个特殊的灰色标签——<span style="color:gray"><strong>ignore</strong></span>，被此标签标注后的数据不会再参与到机器学习中。</p>
-<h3 id="系统支持的标注方式"><a href="#系统支持的标注方式" class="headerlink" title="系统支持的标注方式"></a>系统支持的标注方式</h3><p><strong>图片分类：</strong>即通过标签对图片本身进行标注区分。</p>
-<p><strong>目标检测：</strong>通过矩形框对图片中目标物进行标识注释。</p>
-<p><strong>语义分割：</strong>通过类似于钢笔工具的结点包围目标进行标识注释。</p>
-<p><strong>文本分类：</strong>通过标签对文本自身进行标注区分。</p>
-<p><strong>中文分词：</strong>通过鼠标选中对文本中若干分词。</p>
-<p><strong>命名实体识别：</strong>通过鼠标选中对文本进行分词以及标签注释。</p>
-<h2 id="标注信息是如何管理的"><a href="#标注信息是如何管理的" class="headerlink" title="标注信息是如何管理的"></a>标注信息是如何管理的</h2><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><ul>
-<li><p>数据集的标注信息是保存在mysql当中的。</p>
-<ul>
-<li>如果在MinIo中维护一个数据集的标注信息文件，删改等操作十分不便</li>
-<li>如果在MinIo中对数据集每个文件都维护一个标注信息文件，一来会导致MinIo中存储文件太多，二来每次对标注信息crud操作时都要访问MinIo</li>
-</ul>
-</li>
-<li><p>具体的数据集所对应的标注信息是在下载时生成的。</p>
-<ul>
-<li>因为要在数据集数据表中维护每一个数据文件地址、名称等信息，而文件标注信息也保存在此</li>
-<li>由于每个文件标注信息是单独存在的，那么数据集总的标注信息是不存在的</li>
-<li>每次下载数据集标注信息时，未标注的数据需要过滤，如此只需要将有标注内容的文件标注信息拼接成一份标注信息即可</li>
-<li>下载时生成保证了标注信息的准确性和实时性</li>
-</ul>
-</li>
-<li><p>正常情况下预览标注信息是对单个文件的标注信息进行预览。</p>
-<ul>
-<li>此场景出现频率较高，数据库中维护每个文件标注信息便于单个文件浏览，响应速度快</li>
-</ul>
-</li>
-<li><p>频繁请求标注信息下载怎么办</p>
-</li>
-</ul>
-<h3 id="组织下载"><a href="#组织下载" class="headerlink" title="组织下载"></a>组织下载</h3><ul>
-<li><p>数据集下载：直接将数据集所在MinIo中的URL返回给前端</p>
-</li>
-<li><p>标注信息下载</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [文件<span class="number">1</span>地址, 文件<span class="number">2</span>地址...],</span><br><span class="line">    <span class="string">&quot;文件1名称:标注信息</span></span><br><span class="line"><span class="string">     文件2名称:标注信息</span></span><br><span class="line"><span class="string">     ...&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="标注任务是如何管理的"><a href="#标注任务是如何管理的" class="headerlink" title="标注任务是如何管理的"></a>标注任务是如何管理的</h2><h3 id="生成任务"><a href="#生成任务" class="headerlink" title="生成任务"></a>生成任务</h3><ul>
-<li>查询私有数据集未标注的数据量</li>
-<li>一次可分配一组标注任务（每组标注任务有共同的组别标识）</li>
-</ul>
-<h3 id="接单任务"><a href="#接单任务" class="headerlink" title="接单任务"></a>接单任务</h3><p>平台使用者可在众包中心接单标注任务</p>
-<h3 id="审批任务"><a href="#审批任务" class="headerlink" title="审批任务"></a>审批任务</h3><p>标注任务完成后可提交审核，由任务发布者进行审核</p>
-<h2 id="数据集是如何投入使用的"><a href="#数据集是如何投入使用的" class="headerlink" title="数据集是如何投入使用的"></a>数据集是如何投入使用的</h2><ul>
-<li><p>分享数据集下载地址</p>
-</li>
-<li><p>直接下载数据集</p>
-</li>
-<li><p>在算法建模模块直接引用数据集</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>项目</category>
-      </categories>
-      <tags>
-        <tag>大数据实训平台</tag>
-        <tag>数据众包</tag>
       </tags>
   </entry>
 </search>
