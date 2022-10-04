@@ -208,14 +208,6 @@
 <li>一个集群中包含多个Set，每个对象具体存储在哪一个上面是<span style="color:red">根据对象名进行哈希</span>，然后映射到唯一的Set上面，如此便从理论上保证了数据均匀分布在所有Set上</li>
 <li>存储对象数据分布的也非常均匀，一个 Set 上包含多少个 Drive 是由系统自动根据集群规模算出来的，当然，也可以自己去配置。一个 Set 的 Drive 系统会考虑尽可能把它放在多的节点上面，保证它的可靠性</li>
 </ul>
-<h3 id="Bucket是如何做到数据隔离的"><a href="#Bucket是如何做到数据隔离的" class="headerlink" title="Bucket是如何做到数据隔离的"></a>Bucket是如何做到数据隔离的</h3><h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p><span style="color:red"><strong>去中心化架构</strong></span></p>
-<p><span style="color:red"><strong>统一命名空间</strong></span></p>
-<p><span style="color:red"><strong>分布式锁管理</strong></span></p>
-<p><span style="color:red"><strong>数据结构</strong></span></p>
-<p><span style="color:red"><strong>统一域名访问</strong></span></p>
-<p><span style="color:red"><strong>存储机制</strong></span></p>
-<p><span style="color:red"><strong>lambda计算与持续备份</strong></span></p>
-<p><span style="color:red"><strong>对象存储网关</strong></span></p>
 <h2 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h2><h3 id="存储位置"><a href="#存储位置" class="headerlink" title="存储位置"></a>存储位置</h3><p>当传入目标存储对象时</p>
 <ul>
 <li>首先看Minio服务是否是分布式部署。如果是，对象文件会根据文件名Hash到某一Set</li>
@@ -230,9 +222,7 @@
 <p><span style="color:red"><strong>多主机多硬盘</strong></span></p>
 <p>该模式是Minio服务最常用的架构，通过共享一个access_key和secret_key，在<strong>多台（2-32）服务器</strong>上搭建服务，且数据分散在<strong>多块（大于4块，无上限）磁盘</strong>上，提供了<strong>较为强大的数据冗余机制</strong>（Reed-Solomon纠删码）</p>
 <p><img src="http://qn.mfei.fun/img/image-20221003110718897.png" alt="image-20221003110718897"></p>
-<h3 id="数据传输方式"><a href="#数据传输方式" class="headerlink" title="数据传输方式"></a><span style="color:green">数据传输方式</span></h3><p>Minio 是一个基于Apache License v2.0开源协议的对象存储服务。它兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器&#x2F;虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p>
-<p><span style="color:green">Minio 除了直接作为对象存储使用，还可以作为云上对象存储服务的网关层，无缝对接到 Amazon S3、MicroSoft Azure</span></p>
-<h3 id="大文件传输方式"><a href="#大文件传输方式" class="headerlink" title="大文件传输方式"></a>大文件传输方式</h3><h2 id="分布式部署"><a href="#分布式部署" class="headerlink" title="分布式部署"></a>分布式部署</h2><p><span style="color:green">在大数据领域，通常的设计理念都是无中心和分布式。Minio分布式模式可以帮助你搭建一个高可用的对象存储服务，你可以使用这些存储设备，而不用考虑其真实物理位置。</span></p>
+<h2 id="分布式部署"><a href="#分布式部署" class="headerlink" title="分布式部署"></a>分布式部署</h2><p><span style="color:green">在大数据领域，通常的设计理念都是无中心和分布式。Minio分布式模式可以帮助你搭建一个高可用的对象存储服务，你可以使用这些存储设备，而不用考虑其真实物理位置。</span></p>
 <h3 id="分布式部署优势"><a href="#分布式部署优势" class="headerlink" title="分布式部署优势"></a>分布式部署优势</h3><ul>
 <li><p>数据保护</p>
 <blockquote>
