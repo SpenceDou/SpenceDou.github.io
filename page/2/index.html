@@ -153,6 +153,179 @@
     
     
     <article
+  id="post-选择排序的双指针优化"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/11/02/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84%E5%8F%8C%E6%8C%87%E9%92%88%E4%BC%98%E5%8C%96/"
+    >选择排序的双指针优化</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2020/11/02/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84%E5%8F%8C%E6%8C%87%E9%92%88%E4%BC%98%E5%8C%96/" class="article-date">
+  <time datetime="2020-11-02T09:36:21.000Z" itemprop="datePublished">2020-11-02</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h2 id="先整清楚选择排序"><a href="#先整清楚选择排序" class="headerlink" title="先整清楚选择排序"></a>先整清楚<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">选择排序</a></h2><h3 id="什么是选择排序？"><a href="#什么是选择排序？" class="headerlink" title="什么是选择排序？"></a>什么是选择排序？</h3><p><code>矮子里面挑将军</code>——双重循环<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E9%81%8D%E5%8E%86&spm=1001.2101.3001.7020">遍历</a>数组，每经过一轮比较，找到最小元素的下标，将其交换至首位，下次排序时它就不参与排序了，而是从<strong>剩余</strong>的数据中挑选最值。</p>
+<p><img src="http://qn.mfei.fun/img/image-20220920143957257.png" alt="image-20220920143957257"></p>
+<h3 id="手写一个选择排序"><a href="#手写一个选择排序" class="headerlink" title="手写一个选择排序"></a>手写一个选择排序</h3><p>目标数组：{1, 0, 3, 8, 7, 2, 0, 5, 4, 6}</p>
+<p>目标结果：顺序升序排序</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">selectionSort</span><span class="params">()</span> &#123;</span><br><span class="line">	<span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="type">int</span> minIndex;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        minIndex = i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt; arr.length; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[minIndex] &gt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最小值的下标</span></span><br><span class="line">                minIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将最小元素交换至首位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">temp</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[minIndex];</span><br><span class="line">        arr[minIndex] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 输出一下</span></span><br><span class="line">	<span class="keyword">for</span>(<span class="type">int</span> i : arr) &#123;</span><br><span class="line">		System.err.print(i);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="选择排序和冒泡排序有什么区别？"><a href="#选择排序和冒泡排序有什么区别？" class="headerlink" title="选择排序和冒泡排序有什么区别？"></a>选择排序和<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&spm=1001.2101.3001.7020">冒泡排序</a>有什么区别？</h3><p><code>回想下两种排序的原理图，还是有不一样的地方的</code></p>
+<p>冒泡排序和选择排序虽然都是双for循环排序，时间复杂度也都是O(n^2)…巴拉巴拉…。但是！<strong>冒泡排序每轮选取最值时，这个比较的过程是在不断地交换的；选</strong></p>
+<p><strong>择排序每轮选取最值是通过一个变量记录最值索引，该轮比较结束后进行一次交换</strong>。可见选择排序很大程度上减少了交换次数。</p>
+<p><code>你以为这就完了</code>？这两种排序方式还有个极大的差别就是——<strong>冒泡排序是稳定的，选择排序是不稳定（排序前后相同值元素的前后位置可能会发生变化）的</strong>。</p>
+<hr>
+
+<h2 id="算法优化"><a href="#算法优化" class="headerlink" title="算法优化"></a>算法优化</h2><h3 id="最大值和最小值每轮比较只能得其一吗？"><a href="#最大值和最小值每轮比较只能得其一吗？" class="headerlink" title="最大值和最小值每轮比较只能得其一吗？"></a>最大值和最小值每轮比较只能得其一吗？</h3><p><code>我们可以控制选择排序每轮比较选择出最大值还是者最小值，那么，我全都要呢？</code><br>本着这个目标，就上面的代码，稍作优化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">selectionSort</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] arr = &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length/<span class="number">2</span>; i++) &#123;</span><br><span class="line">        System.out.print(<span class="string">&quot;第&quot;</span>+(i+<span class="number">1</span>)+<span class="string">&quot;次选最值——&quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">minIndex</span> <span class="operator">=</span> i;</span><br><span class="line">        <span class="type">int</span> <span class="variable">maxIndex</span> <span class="operator">=</span> arr.length - <span class="number">1</span> - i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + <span class="number">1</span>; j &lt;= arr.length - <span class="number">1</span> - i; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[minIndex] &gt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最小值的下标</span></span><br><span class="line">                minIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (arr[maxIndex] &lt; arr[j]) &#123;</span><br><span class="line">                <span class="comment">// 记录最大值的下标</span></span><br><span class="line">                maxIndex = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将最小元素交换至首位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">temp</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[minIndex];</span><br><span class="line">        arr[minIndex] = temp;</span><br><span class="line">        System.out.print(<span class="string">&quot;最小值为：&quot;</span>+arr[i]);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这步很关键！</span></span><br><span class="line">        <span class="keyword">if</span> (maxIndex == i)&#123;</span><br><span class="line">            maxIndex = minIndex;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将最大元素交换至末位</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">tem</span> <span class="operator">=</span> arr[arr.length - i - <span class="number">1</span>];</span><br><span class="line">        arr[arr.length - i - <span class="number">1</span>] = arr[maxIndex];</span><br><span class="line">        arr[maxIndex] = tem;</span><br><span class="line">        System.out.println(<span class="string">&quot;最大值为：&quot;</span>+arr[arr.length - i - <span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 输出一下</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i : arr) &#123;</span><br><span class="line">        System.err.print(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结的话就不说了，<strong>外层循环次数少了一半，内层循环次数也少了一半</strong>，你懂的。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+    </footer>
+  </div>
+
+    
+ 
+   
+  
+</article>
+
+    
+    <article
+  id="post-Docker运行Nginx容器"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/"
+    >Docker运行Nginx容器</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2020/10/27/Docker%E8%BF%90%E8%A1%8CNginx%E5%AE%B9%E5%99%A8/" class="article-date">
+  <time datetime="2020-10-27T10:15:39.000Z" itemprop="datePublished">2020-10-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <p><strong>整体步骤：</strong></p>
+<ol>
+<li>创建并运行容器，且在nginx容器创建时向宿主机挂载出一个空文件夹。</li>
+<li>进入容器将conf.d移动到向宿主机挂载的空文件夹中。</li>
+<li>进入向宿主机挂载的空文件夹中，并将conf.d软连接到其原本所在的目录。</li>
+</ol>
+<h2 id="拉取nginx镜像"><a href="#拉取nginx镜像" class="headerlink" title="拉取nginx镜像"></a>拉取nginx镜像</h2><ul>
+<li>先<code>推荐个网站</code>，从你开始使用docker就要必备的——<a target="_blank" rel="noopener" href="https://hub.docker.com/">DockerHub</a>。一句话说明就是一个镜像大全。</li>
+<li><code>寻找镜像资源</code>的话就在上面那个网站上搜索就行，版本、下载方式自选。</li>
+<li><code>拉取镜像</code>的话在上面那个网站搜索后，拉取命令<code>docker pull nginx</code>直接给你了，且nginx无须在意版本，直接拉last版本即可。<img src="http://qn.mfei.fun/img/image-20220919151601854.png" alt="image-20220919151601854"></li>
+</ul>
+<h2 id="创建配置路径"><a href="#创建配置路径" class="headerlink" title="创建配置路径"></a>创建配置路径</h2><p>如果你选择容器管理nginx服务的话，请先不要着急启动，先<code>在宿主机新建一个文件夹</code>，这将是你之后<code>存放nginx配置</code>的地方。</p>
+<h2 id="创建并启动容器"><a href="#创建并启动容器" class="headerlink" title="创建并启动容器"></a>创建并启动容器</h2><ul>
+<li><p>控制台执行<code>docker images</code>检查镜像是否存在。</p>
+</li>
+<li><p>配置启动命令（创建容器很简单，但是想要好用，需要认真配置）</p>
+<blockquote>
+<p>最终命令：<code>docker run --name nginx-first -p 90:80 -v /var/dps/nginx:/nginx -d nginx</code></p>
+<blockquote>
+<p>解释：</p>
+<p><code>docker run nginx</code>，为生成nginx镜像的容器。<br><code>--name nginx-first</code>，指定容器名称为nginx-first。<br><code>-p 90:80</code>，指将容器中80端口映射到宿主机90端口。</p>
+<p><code>-v /var/dps/nginx:/nginx</code>，指将容器中nginx某一文件夹<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8C%82%E8%BD%BD&spm=1001.2101.3001.7020">挂载</a>到宿主机某一文件夹（左边为宿主机文件夹地址）。</p>
+<p><code>-d</code>，表示后台运行该容器。</p>
+</blockquote>
+</blockquote>
+</li>
+</ul>
+<h2 id="设置nginx配置"><a href="#设置nginx配置" class="headerlink" title="设置nginx配置"></a>设置nginx配置</h2><ul>
+<li><p>将容器中nginx默认<code>conf.d配置文件夹移动到</code>启动容器命令中预设的<code>挂载目录</code>中。</p>
+<blockquote>
+<ol>
+<li>查看容器<code>docker ps</code>，进入容器<code>docker exec -it [容器id] /bin/bash</code>。</li>
+<li>cd到&#x2F;etc&#x2F;nginx目录中<code>cd /etc/nginx</code>。</li>
+<li>再将该文件夹下conf.d文件夹移动到你预设的挂载目录中<code>rm /etc/nginx/conf.d /nginx</code>。</li>
+</ol>
+</blockquote>
+</li>
+<li><p>来到启动容器命令中预设的挂载目录中，<code>检查是否存在conf.d文件夹</code>。</p>
+</li>
+<li><p>在预设的挂载目录中，将conf.d文件夹软连接到其原本的位置<code>ln -s /nginx/conf.d /etc/nginx</code>。</p>
+</li>
+<li><p>此时即可在<code>宿主机的挂载目录中操作</code>nginx容器的default.conf文件或者<code>新增配置文件</code>了。</p>
+</li>
+</ul>
+<h3 id="nginx配置文件在哪里？"><a href="#nginx配置文件在哪里？" class="headerlink" title="nginx配置文件在哪里？"></a>nginx配置文件在哪里？</h3><ul>
+<li>nginx的配置文件默认是在<code>etc/nginx</code>文件夹下，该文件夹下有<code>nginx.conf</code>、<code>conf.d</code>两个配置文件夹，一般我们自定义的配置是要放在<code>conf.d</code>中的，故只需将<code>cong.d</code>挂载到宿主机即可。</li>
+<li>如果你非想在自己去找找看，直接执行<code>docker run -d nginx</code></li>
+</ul>
+<h3 id="为什么不直接将nginx配置文件挂载出来？"><a href="#为什么不直接将nginx配置文件挂载出来？" class="headerlink" title="为什么不直接将nginx配置文件挂载出来？"></a>为什么不直接将nginx配置文件挂载出来？</h3><p>我们既然知道了容器中nginx的conf.d文件夹位置，为什么<code>不直接将其挂载出来</code>，反而要多此一举搞个<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E8%BD%AF%E8%BF%9E%E6%8E%A5&spm=1001.2101.3001.7020">软连接</a>？其实也不是不行，只是如果我们一上来就拿个空文件夹来挂载conf.d文件夹，会造成<code>覆盖</code>，使容器中conf.d文件夹也变成空文件夹，<code>间接删除了原有的default.conf文件</code>，我们还要从其他地方拷一个default.conf过来。</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nginx/" rel="tag">nginx</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" rel="tag">服务器</a></li></ul>
+
+    </footer>
+  </div>
+
+    
+ 
+   
+  
+</article>
+
+    
+    <article
   id="post-枚举类使用场景"
   class="article article-type-post"
   itemscope
